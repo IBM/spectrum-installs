@@ -269,7 +269,7 @@ waitForClusterUp
 log "Wait for EGO and ASCD REST URLs to be accessible"
 waitForRestUrlsUp
 
-if [ "$RG_GPU_NAME" != ""]
+if [ "$RG_GPU_NAME" != "" ]
 then
 	log "Create GPU Resource Group $RG_GPU_NAME"
 	createResourceGroupGPU $RG_GPU_NAME
