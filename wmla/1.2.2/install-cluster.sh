@@ -164,7 +164,7 @@ else
   fi
 fi
 
-if [ "$CLUSTERINSTALL_CREATE_IG" == "enabled" ]
+if [ "$CLUSTERINSTALL_CREATE_USER_ENVIRONMENT" == "enabled" ]
 then
   if [ `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]
   then

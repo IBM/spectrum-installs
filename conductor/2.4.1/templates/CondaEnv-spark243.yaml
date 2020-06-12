@@ -12,3 +12,5 @@ dependencies:
   - pycrypto==2.6.1
   - parso==0.7.0
   - pandas
+  - pynacl
+  - bcrypt

@@ -33,7 +33,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 * If there are GPUs in server, nvidia driver needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
-* It is recommended to use these scripts from a shared filesystem accessible by all hosts. If each node are installed individually without *install-cluster.sh*, ensure the following parameters in *parameters.inc* are using a shared filesystem:
+* It is recommended to use these scripts from a shared filesystem accessible by all hosts. However if each node are installed individually without *install-cluster.sh*, scripts can be on local filesystem of each node and only the following parameters in *parameters.inc* need to be on a shared filesystem:
   * SSL_TMP_DIR (only used if SSL is enabled and *update-SSL-host.sh* is executed)
   * SYNC_DIR (only used if *INSTALL_TYPE=local* and there are additional management hosts)
   * ANACONDA_LOCAL_CHANNEL_DIR (only used if *ANACONDA_LOCAL_CHANNEL=enabled*)
@@ -94,6 +94,7 @@ tar xzf wmla-1.2.2*.tar.gz
 ```
 * Extract install files:
 ```bash
+export IBM_WMLA_LICENSE_ACCEPT=yes
 sh ibm-wmla-1.2.2*.bin
 ```
 
@@ -161,7 +162,7 @@ Execute the following script, as root, on any server having password-less ssh ac
 2. Execute *install-host.sh* as root, on all servers if *INSTALL_TYPE=local* (starting with the master) or only on master if *INSTALL_TYPE=shared*.
 3. If *SSL=enabled* and self-signed certificates will be used, execute *update-SSL-host.sh* as root on all hosts starting with the master host.
 4. Execute *postinstall-host.sh* as root on all servers.
-5. To create Instance Groups, execute *create-user-environment.sh* on master. It will create 1 Instance Group with Spark 2.4.3 and Jupyter notebook, and 1 Instance Group with Spark 2.3.3 for DLI. At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
+5. To create User environment, execute *create-user-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 2 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook and 1 with Spark 2.3.3 for DLI). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from WMLA GUI or with this CLI:
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f"
@@ -213,8 +214,8 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __update-SSL-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
 * __create-user-environment.sh__: Create 2 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 for DLI).
 * __prepare-airgap-install.sh__: Script to download required files before doing an airgap installation.
-* __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete BASE_INSTALL_DIR).
-* __forceuninstall-cluster.sh__: Uninstall WMLA on all hosts (stop EGO services, stop EGO on all hosts, delete BASE_INSTALL_DIR on all hosts, delete BASE_SHARED_DIR and EGO_SHARED_DIR).
+* __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
+* __forceuninstall-cluster.sh__: Uninstall WMLA on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *BASE_SHARED_DIR* and *EGO_SHARED_DIR*).
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
