@@ -20,11 +20,16 @@ log "Wait for cluster to start and REST URLs to be accessible"
 waitForClusterUp
 waitForRestUrlsUp
 
-log "Verifying if there are some GPU hosts in the cluster"
-getResourceGroupNbHosts $RG_GPU_NAME RG_GPU_NB_HOST
-if [ "$RG_GPU_NB_HOST" == "0" ]
+if [ "$RG_GPU_NAME" != "" ]
 then
-  log "$RG_GPU_NAME doesn't have any host, therefore using $RG_CPU_NAME for all components of the Instance Groups"
+  log "Verifying if there are some GPU hosts in the cluster"
+  getResourceGroupNbHosts $RG_GPU_NAME RG_GPU_NB_HOST
+  if [ "$RG_GPU_NB_HOST" == "0" ]
+  then
+    log "$RG_GPU_NAME doesn't have any host, therefore using $RG_CPU_NAME for all components of the Instance Groups"
+    RG_GPU_NAME=$RG_CPU_NAME
+  fi
+else
   RG_GPU_NAME=$RG_CPU_NAME
 fi
 

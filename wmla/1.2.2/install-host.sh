@@ -270,8 +270,11 @@ waitForClusterUp
 log "Wait for EGO and ASCD REST URLs to be accessible"
 waitForRestUrlsUp
 
-log "Create GPU Resource Group $RG_GPU_NAME"
-createResourceGroupGPU $RG_GPU_NAME
+if [ "$RG_GPU_NAME" != ""]
+then
+	log "Create GPU Resource Group $RG_GPU_NAME"
+	createResourceGroupGPU $RG_GPU_NAME
+fi
 
 if [ "$ANACONDA_DISTRIBUTIONS_ID_TO_DELETE" != "" ]
 then
