@@ -220,7 +220,7 @@ Execute the following script, as root, on any server having password-less ssh ac
 
 ## 7. Info
 ### 7.1. Source repository
-The repository of these scripts is located at XXXXXX.  
+The repository of these scripts is located at [https://github.com/IBM/spectrum-installs](https://github.com/IBM/spectrum-installs).  
 
 ### 7.2. Author
 Anthony Frery, afrery@us.ibm.com  
