@@ -1,0 +1,14 @@
+name: ##CONDA_ENV_NAME##
+channels:
+  - https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
+  - defaults
+dependencies:
+  - python=3.6
+  - powerai==1.7.0
+  - keras==2.3.1
+  - conda
+  - jupyterlab==0.35.4
+  - tornado==6.0.2
+  - pycrypto==2.6.1
+  - parso==0.7.0
+  - pandas
