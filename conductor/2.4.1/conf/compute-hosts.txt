@@ -1,2 +1,0 @@
-server3.domain.com
-server4.domain.com
