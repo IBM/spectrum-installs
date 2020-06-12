@@ -68,7 +68,7 @@ export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.4.1.0_
 export CONDUCTOR_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/conductor/conductor_entitlement.dat # Path to conductor 2.4.1 entitlement.
 
 ### IFIXES
-export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Path to egomgmt .tar.gz for ifix 546962.
+export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546962.
 
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES

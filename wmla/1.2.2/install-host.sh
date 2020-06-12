@@ -237,12 +237,11 @@ then
 	source $INSTALL_DIR/profile.platform
 fi
 
-log "Install ifix 546962 (package `basename $IFIX546962_EGOMGMT`)"
-TMP_FIX=/tmp/`basename $IFIX546962_EGOMGMT`
-cp -f $IFIX546962_EGOMGMT $TMP_FIX 2>&1 | tee -a $LOG_FILE
-chmod o+r $TMP_FIX 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoinstallfixes --silent $TMP_FIX" 2>&1 | tee -a $LOG_FILE
-rm -f $TMP_FIX 2>&1 | tee -a $LOG_FILE
+if [ "$IFIX546962_EGOMGMT" != "" ]
+then
+	log "Installing Ifix 546962"
+	installIfix "$IFIX546962_EGOMGMT"
+fi
 
 if [ "$HOST_TYPE" == "MANAGEMENT" ]
 then

@@ -289,6 +289,17 @@ createConsumer() {
 	egosh consumer add $CONSUMER_PATH -e $EXECUTION_USER -a $ADMIN_USER -g $RG_LIST 2>&1 | tee -a $LOG_FILE
 }
 
+##### IFIXES INSTALLATION FUNCTIONS
+
+installIfix() {
+	IFIX_FILE=$1
+	TMP_FIX=/tmp/`basename $IFIX_FILE`
+	cp -f $IFIX_FILE $TMP_FIX 2>&1 | tee -a $LOG_FILE
+	chmod o+r $TMP_FIX 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoinstallfixes --silent $TMP_FIX" 2>&1 | tee -a $LOG_FILE
+	rm -f $TMP_FIX 2>&1 | tee -a $LOG_FILE
+}
+
 ##### ANACONDA MANAGEMENT FUNCTIONS
 
 downloadAnacondaDistribution() {

@@ -62,7 +62,7 @@ export IG_ANACONDA_INSTANCE_NAME=Anaconda3-2019-10 # Anaconda instance to create
 export IG_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$IG_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for Instance Groups will be deployed.
 
 ##### GPU RESOURCE GROUP PARAMETERS
-export RG_GPU_NAME=ComputeHostsGPU # Name of GPU Resource Group to create.
+export RG_GPU_NAME=ComputeHostsGPU # Optional, name of GPU Resource Group to create. If not specified, no GPU Resource Group will be created.
 
 ##### USER ENVIRONMENT PARAMETERS
 export IG_USER_NAME=user1 # Username of the user which will have access (consumer admin role) to the Instance Groups created.
@@ -89,7 +89,7 @@ export DLI_BIN=`dirname "$(readlink -f "$0")"`/dli/dli-1.2.4.0_${ARCH}.bin # Pat
 export DLI_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/dli/dli_entitlement.dat # Path to DLI 1.2.4 entitlement.
 
 ### IFIXES
-export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Path to egomgmt .tar.gz for ifix 546962.
+export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546962.
 
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES
