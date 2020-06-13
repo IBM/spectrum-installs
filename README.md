@@ -7,6 +7,6 @@ This repository provides example scripts to automate installation of the followi
 * Watson Machine Learning Accelerator
 
 ## Disclaimer
-These scripts are provided as-is, and are not guarantee to work in your environment.  
+These scripts are provided as-is, and are not guaranteed to work in your environment.  
 Please review carefully these scripts and modify them based on your environment before using them.  
 Please test these scripts in a test environment first.  
