@@ -26,7 +26,7 @@ source $INSTALL_DIR/profile.platform
 export JAVA_HOME=$EGO_TOP/jre/3.8/linux-${ARCH}/
 export PATH=$PATH:$JAVA_HOME/bin
 export KEYTOOL_BIN=$JAVA_HOME/bin/keytool
-export SECURITYUTILITY_BIN=$EGO_TOP/wlp/19.0.0.12/bin/securityUtility
+export SECURITYUTILITY_BIN=$EGO_TOP/wlp/$WLP_VERSION/bin/securityUtility
 
 log "Identify the type of current host (master, management or compute)"
 determineHostType
