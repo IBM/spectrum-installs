@@ -18,7 +18,10 @@ log "Starting host installation"
 
 [[ ! -f $CONDUCTOR_BIN ]] && log "Conductor installer $CONDUCTOR_BIN doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $CONDUCTOR_ENTITLEMENT ]] && log "Conductor entitlement $CONDUCTOR_ENTITLEMENT doesn't exist, aborting" ERROR && exit 1
-[[ ! -f $IFIX546962_EGOMGMT ]] && log "iFix 546962 installer $IFIX546962_EGOMGMT doesn't exist, aborting" ERROR && exit 1
+if [ "$IFIX546962_EGOMGMT" != "" ]
+then
+	[[ ! -f $IFIX546962_EGOMGMT ]] && log "iFix 546962 installer $IFIX546962_EGOMGMT doesn't exist, aborting" ERROR && exit 1
+fi
 
 log "Identify the type of current host (master, management or compute)"
 determineHostType

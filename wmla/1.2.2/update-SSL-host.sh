@@ -6,7 +6,6 @@
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
-source `dirname "$(readlink -f "$0")"`/functions/functions-SSL.inc
 export LOG_FILE=$LOG_DIR/update-SSL-host_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chown $CLUSTERADMIN:$CLUSTERADMIN $LOG_DIR
 

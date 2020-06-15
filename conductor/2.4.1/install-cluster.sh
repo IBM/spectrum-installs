@@ -80,8 +80,10 @@ echo "su -l $CLUSTERADMIN -c 'source $INSTALL_DIR/profile.platform && egoconfig 
 
 echo "#!/bin/sh" > $SCRIPT_GET_WEBGUI_URL
 chmod +x $SCRIPT_GET_WEBGUI_URL 2>&1 | tee -a $LOG_FILE
+echo "export LOG_FILE=$LOG_DIR/get-webgui-url_\`hostname -s\`.log" >> $SCRIPT_GET_WEBGUI_URL
 echo "source `dirname "$(readlink -f "$0")"`/conf/parameters.inc" >> $SCRIPT_GET_WEBGUI_URL
-echo "source `dirname "$(readlink -f "$0")"`/functions/functions.inc" >> $SCRIPT_GET_WEBGUI_URL
+echo "source `dirname "$(readlink -f "$0")"`/functions/functions-common.inc" >> $SCRIPT_GET_WEBGUI_URL
+echo "source `dirname "$(readlink -f "$0")"`/functions/functions-cluster-management.inc" >> $SCRIPT_GET_WEBGUI_URL
 echo "waitForClusterUp" >> $SCRIPT_GET_WEBGUI_URL
 echo "waitForGuiUp" >> $SCRIPT_GET_WEBGUI_URL
 echo 'source $INSTALL_DIR/profile.platform' >> $SCRIPT_GET_WEBGUI_URL

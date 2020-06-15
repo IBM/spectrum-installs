@@ -20,8 +20,10 @@ log "Starting host installation"
 [[ ! -f $CONDUCTOR_ENTITLEMENT ]] && log "Conductor entitlement $CONDUCTOR_ENTITLEMENT doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $DLI_BIN ]] && log "DLI installer $DLI_BIN doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $DLI_ENTITLEMENT ]] && log "Conductor entitlement $DLI_ENTITLEMENT doesn't exist, aborting" ERROR && exit 1
-[[ ! -f $IFIX546962_EGOMGMT ]] && log "iFix 546962 installer $IFIX546962_EGOMGMT doesn't exist, aborting" ERROR && exit 1
-
+if [ "$IFIX546962_EGOMGMT" != "" ]
+then
+	[[ ! -f $IFIX546962_EGOMGMT ]] && log "iFix 546962 installer $IFIX546962_EGOMGMT doesn't exist, aborting" ERROR && exit 1
+fi
 [[ ! -f $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE ]] && log "dlinsights conda profile template $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
 
 log "Identify the type of current host (master, management or compute)"
