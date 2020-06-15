@@ -31,7 +31,7 @@ echo "`dirname "$(readlink -f "$0")"`/prepare-host.sh" >> $SCRIPT_INSTALL_MASTER
 echo "[[ \$? -ne 0 ]] && echo \"Error during execution of prepare-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
 echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_MASTER
 echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
-if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
+if [ "$SSL" == "enabled" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MASTER
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of update-ssl-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
@@ -46,7 +46,7 @@ if [ "$INSTALL_TYPE" == "local" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MANAGEMENT
-  if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
+  if [ "$SSL" == "enabled" ]
   then
     echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
   fi
@@ -61,7 +61,7 @@ if [ "$INSTALL_TYPE" == "local" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_COMPUTE
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_COMPUTE
-  if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
+  if [ "$SSL" == "enabled" ]
   then
     echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_COMPUTE
   fi
@@ -80,8 +80,10 @@ echo "su -l $CLUSTERADMIN -c 'source $INSTALL_DIR/profile.platform && egoconfig 
 
 echo "#!/bin/sh" > $SCRIPT_GET_WEBGUI_URL
 chmod +x $SCRIPT_GET_WEBGUI_URL 2>&1 | tee -a $LOG_FILE
+echo "export LOG_FILE=$LOG_DIR/get-webgui-url_\`hostname -s\`.log" >> $SCRIPT_GET_WEBGUI_URL
 echo "source `dirname "$(readlink -f "$0")"`/conf/parameters.inc" >> $SCRIPT_GET_WEBGUI_URL
-echo "source `dirname "$(readlink -f "$0")"`/functions/functions.inc" >> $SCRIPT_GET_WEBGUI_URL
+echo "source `dirname "$(readlink -f "$0")"`/functions/functions-common.inc" >> $SCRIPT_GET_WEBGUI_URL
+echo "source `dirname "$(readlink -f "$0")"`/functions/functions-cluster-management.inc" >> $SCRIPT_GET_WEBGUI_URL
 echo "waitForClusterUp" >> $SCRIPT_GET_WEBGUI_URL
 echo "waitForGuiUp" >> $SCRIPT_GET_WEBGUI_URL
 echo 'source $INSTALL_DIR/profile.platform' >> $SCRIPT_GET_WEBGUI_URL
@@ -106,7 +108,7 @@ then
     log "Restart EGO on master host to take into account new management hosts"
     runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
     log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
-  	sleep $EGO_SHUTDOWN_WAITTIME
+    sleep $EGO_SHUTDOWN_WAITTIME
     if [ "$MASTER_CANDIDATES" != "" ]
     then
       log "Configuring master candidates list"
@@ -114,7 +116,7 @@ then
       log "Restart EGO on master host to take into account new master candidates list"
       runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
       log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
-    	sleep $EGO_SHUTDOWN_WAITTIME
+      sleep $EGO_SHUTDOWN_WAITTIME
     fi
   else
     log "No management hosts to install in $MANAGEMENTHOSTS_FILE"
@@ -138,7 +140,7 @@ else
     log "Restart EGO on master host to take into account new management hosts"
     runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
     log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
-  	sleep $EGO_SHUTDOWN_WAITTIME
+    sleep $EGO_SHUTDOWN_WAITTIME
     if [ "$MASTER_CANDIDATES" != "" ]
     then
       log "Configuring master candidates list"
@@ -146,7 +148,7 @@ else
       log "Restart EGO on master host to take into account new master candidates list"
       runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
       log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
-    	sleep $EGO_SHUTDOWN_WAITTIME
+      sleep $EGO_SHUTDOWN_WAITTIME
     fi
   else
     log "No management hosts to install in $MANAGEMENTHOSTS_FILE"
@@ -162,18 +164,6 @@ else
   else
     log "No compute hosts to install in $COMPUTEHOSTS_FILE"
   fi
-fi
-
-if [ "$CLUSTERINSTALL_CREATE_USER_ENVIRONMENT" == "enabled" ]
-then
-  if [ `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]
-  then
-    log "Wait $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT seconds for compute hosts to join the cluster before creating user environment"
-    sleep $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT
-  fi
-
-  log "Creating User Environment"
-  runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-user-environment.sh" "false"
 fi
 
 log "Get WEBGUI URL"

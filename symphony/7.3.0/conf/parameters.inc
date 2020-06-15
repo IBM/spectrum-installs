@@ -59,8 +59,6 @@ export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM
 ### EGO DEFAULT SETTINGS
 export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation.
 export EGO_ADMIN_PASSWORD=Admin # Default Admin password after EGO installation.
-export RG_MGMT_NAME=ManagementHosts # Default Resource Group with management hosts after EGO installation.
-export RG_CPU_NAME=ComputeHosts # Default Resource Group with compute hosts after EGO installation.
 
 ### SSL
 export SSL_TMP_DIR=$CACHE_DIR/ssl-files # Directory where SSL files will be written from the master host and need to be read by all other hosts. Need to be shared filesystem.
