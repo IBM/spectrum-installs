@@ -37,14 +37,17 @@ export SPARKSHUFFLE_DIR=$BASE_SHARED_DIR/spark-shuffle # Directory that Spark Sh
 export NOTEBOOKS_DIR=$BASE_SHARED_DIR/notebooks # Directory that Jupyter notebooks of Instance Groups will use for data. It must be on shared FS.
 export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
 
+##### ARCHITECTURE (x86_64 or ppc64le)
+export ARCH=`uname -m` # Identify current architecture of the server.
+
 ##### ANACONDA PARAMETERS
 ### COMMON
-export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-x86_64 # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
-export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
-export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-x86_64 # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
+export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
+export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le Anaconda2019.03-Python3-Linux-x86_64" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
+export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
 
 ### ANACONDA PARAMETERS FOR INSTANCE GROUPS IF CREATED
-export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-x86_64 # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
+export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
 export IG_ANACONDA_INSTANCE_NAME=Anaconda3-2019-10 # Anaconda instance to create, to be used by Instance Groups if created.
 export IG_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$IG_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for Instance Groups will be deployed.
 
@@ -61,7 +64,6 @@ export IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/te
 export IG_DEPLOY_TIMEOUT=600 # Timeout in seconds for Instance Group deployment.
 
 ##### PATH TO BINARIES
-export ARCH=`uname -m` # Identify current architecture of the server.
 
 ### CONDUCTOR INSTALLER AND ENTITLEMENT
 export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.4.1.0_${ARCH}.bin # Path to conductor 2.4.1 .bin installer.
