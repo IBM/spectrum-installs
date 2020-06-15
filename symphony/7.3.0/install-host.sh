@@ -80,7 +80,7 @@ else
 		exit 2
 	fi
 	log "Installing SOAM RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ascd*.rpm 2>&1 | tee -a $LOG_FILE
+	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/soam*.rpm 2>&1 | tee -a $LOG_FILE
 	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
 	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
 	then
