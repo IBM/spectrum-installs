@@ -158,11 +158,11 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
-  * __functions/__:
-      * __functions.inc__: Include all functions files.
-      * __functions-common.inc__: Common functions for scripts.
-      * __functions-cluster-management.inc__: Functions to manage cluster.
-      * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
+* __functions/__:
+    * __functions.inc__: Include all functions files.
+    * __functions-common.inc__: Common functions for scripts.
+    * __functions-cluster-management.inc__: Functions to manage cluster.
+    * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
 
 ## 6. Comments for SSL Certificates
 * *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/help/admin/locating_pmc.html).
