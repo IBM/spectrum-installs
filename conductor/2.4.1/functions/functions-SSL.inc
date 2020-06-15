@@ -3,12 +3,11 @@
 ##### Tier 1
 
 updateSslTier1OnMaster() {
-  log "Backup keystore, gui/conf/server_gui.xml, ascd/conf/server_ascd.xml, kernel/conf/server_rest.xml and dli/conf/dlpd/server_dlrest.xml"
+  log "Backup keystore, gui/conf/server_gui.xml, ascd/conf/server_ascd.xml and kernel/conf/server_rest.xml"
   cp $EGO_TOP/wlp/usr/shared/resources/security/serverKeyStore.jks $EGO_TOP/wlp/usr/shared/resources/security/serverKeyStore_BACKUP-`date "+%Y-%m-%d-%H-%M-%S"`.jks 2>&1 | tee -a $LOG_FILE
   cp $EGO_CONFDIR/../../gui/conf/server_gui.xml $EGO_CONFDIR/../../gui/conf/server_gui_BACKUP-`date "+%Y-%m-%d-%H-%M-%S"`.xml 2>&1 | tee -a $LOG_FILE
   cp $EGO_CONFDIR/../../ascd/conf/server_ascd.xml $EGO_CONFDIR/../../ascd/conf/server_ascd_BACKUP-`date "+%Y-%m-%d-%H-%M-%S"`.xml 2>&1 | tee -a $LOG_FILE
   cp $EGO_CONFDIR/server_rest.xml $EGO_CONFDIR/server_rest_BACKUP-`date "+%Y-%m-%d-%H-%M-%S"`.xml 2>&1 | tee -a $LOG_FILE
-  cp $EGO_CONFDIR/../../dli/conf/dlpd/server_dlrest.xml $EGO_CONFDIR/../../dli/conf/dlpd/server_dlrest_BACKUP-`date "+%Y-%m-%d-%H-%M-%S"`.xml 2>&1 | tee -a $LOG_FILE
 
   log "Remove tier1 certificate from serverKeyStore.jks"
   $KEYTOOL_BIN -delete -alias srvalias -keystore $EGO_TOP/wlp/usr/shared/resources/security/serverKeyStore.jks -storepass $SSL_TIER1_KEYSTORE_PASSWORD 2>&1 | tee -a $LOG_FILE
@@ -30,7 +29,6 @@ updateSslTier1OnMaster() {
   sed -i 's#<keyStore id="defaultKeyStore" password=".*" type="JKS"#<keyStore id="defaultKeyStore" password="'$TIER1_PASS'" type="JKS"#' $EGO_CONFDIR/../../gui/conf/server_gui.xml 2>&1 | tee -a $LOG_FILE
   sed -i 's#<keyStore id="defaultKeyStore" password=".*" type="JKS"#<keyStore id="defaultKeyStore" password="'$TIER1_PASS'" type="JKS"#' $EGO_CONFDIR/../../ascd/conf/server_ascd.xml 2>&1 | tee -a $LOG_FILE
   sed -i 's#<keyStore id="defaultKeyStore" password=".*" type="JKS"#<keyStore id="defaultKeyStore" password="'$TIER1_PASS'" type="JKS"#' $EGO_CONFDIR/server_rest.xml 2>&1 | tee -a $LOG_FILE
-  sed -i 's#<keyStore id="defaultKeyStore" password=".*" type="JKS"#<keyStore id="defaultKeyStore" password="'$TIER1_PASS'" type="JKS"#' $EGO_CONFDIR/../../dli/conf/dlpd/server_dlrest.xml 2>&1 | tee -a $LOG_FILE
 
   log "Deleting temporary files"
   rm -f srvcertreq.csr 2>&1 | tee -a $LOG_FILE

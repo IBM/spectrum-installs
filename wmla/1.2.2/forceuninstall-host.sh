@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #############################
-# WARNING: THIS SCRIPT WILL STOP CONDUCTOR CLUSTER AND REMOVE ALL DIRECTORIES! USE WITH CAUTION!
+# WARNING: PLEASE READ README.md FIRST
 #############################
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc

@@ -33,7 +33,7 @@ Official documentation of IBM Spectrum Conductor is available [here](https://www
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
 * It is recommended to use these scripts from a shared filesystem accessible by all hosts. However if each node are installed individually without *install-cluster.sh*, scripts can be on local filesystem of each node and only the following parameters in *parameters.inc* need to be on a shared filesystem:
-  * SSL_TMP_DIR (only used if SSL is enabled and *install-cluster.sh* or *update-SSL-host.sh* is executed)
+  * SSL_TMP_DIR (only used if SSL is enabled and *install-cluster.sh* or *update-ssl-host.sh* is executed)
   * SYNC_DIR (only used if *INSTALL_TYPE=local* and there are additional management hosts)
   * ANACONDA_LOCAL_CHANNEL_DIR (only used if *ANACONDA_LOCAL_CHANNEL=enabled*)
 * If *install-cluster.sh* is used to install all hosts:
@@ -79,7 +79,7 @@ Edit parameters in *conf/parameters.inc*. Mandatory parameters (at the top of th
 #### 4.1.3. Edit hosts list files
 Add the list of servers to install (FQDN as returned by "hostname -f" command), 1 host per line, in the following 2 files:
 * __conf/management-hosts.txt__ (or the file specified as *MANAGEMENTHOSTS_FILE* in *conf/parameters.inc*): List of management hosts (do not include the master).
-* __conf/compute-hosts.txt__ (or the file specified as *COMPUTEHOSTS_FILE* in *conf/parameters.inc*): List of compute hosts (only used if the cluster is installed with *install-cluster.sh*).
+* __conf/compute-hosts.txt__ (or the file specified as *COMPUTEHOSTS_FILE* in *conf/parameters.inc*): List of compute hosts (only used if the cluster is installed with *install-cluster.sh* or if *update-ssl-host.sh* is executed).
 
 ### 4.2. Download and prepare Conductor and ifix files
 
@@ -145,7 +145,7 @@ Execute the following script, as root, on any server having password-less ssh ac
 ##### 4.4.2.1. Step by step
 1. Execute *prepare-host.sh* as root on all servers.
 2. Execute *install-host.sh* as root, on all servers if *INSTALL_TYPE=local* (starting with the master) or only on master if *INSTALL_TYPE=shared*.
-3. If *SSL=enabled* and self-signed certificates will be used, execute *update-SSL-host.sh* as root on all hosts starting with the master host.
+3. If *SSL=enabled* and self-signed certificates will be used, execute *update-ssl-host.sh* as root on all hosts starting with the master host.
 4. Execute *postinstall-host.sh* as root on all servers.
 5. To create User environment, execute *create-user-environment.sh* on master. It will create a user id, Anaconda instance, conda environment and Instance Group with Spark 2.4.3 and Jupyter notebook. At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from Conductor GUI or with this CLI:
@@ -156,17 +156,17 @@ su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig master
 ##### 4.4.2.2. Short version
 1. Local install / SSL enabled - Execute on master host:
 ```bash
-./prepare-host.sh && ./install-host.sh && ./update-SSL-host.sh && ./postinstall-host.sh
+./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
-2. Local install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-SSL-host.sh* is executed on master host before executing it on other hosts):
+2. Local install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-ssl-host.sh* is executed on master host before executing it on other hosts):
 ```bash
-./prepare-host.sh && ./install-host.sh && ./update-SSL-host.sh && ./postinstall-host.sh
+./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
 2. Shared install / SSL enabled - Execute on master host:
 ```bash
-./prepare-host.sh && ./install-host.sh && ./update-SSL-host.sh && ./postinstall-host.sh
+./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
-3. Shared install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-SSL-host.sh* is executed on master host before executing it on other hosts):
+3. Shared install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-ssl-host.sh* is executed on master host before executing it on other hosts):
 ```bash
 ../prepare-host.sh && ./postinstall-host.sh
 ```
@@ -196,7 +196,7 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __install-host.sh__: Installation script (Install all the components on current host).
 * __install-cluster.sh__: Cluster installation script (Install all the components on all hosts and create Instance Groups).
 * __postinstall-host.sh__: Post-installation script (Define rc init script for Conductor and EGO sudoers on current host).
-* __update-SSL-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
+* __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
 * __create-user-environment.sh__: Create user environment (user id, Anaconda instance, conda environment and Instance Group with Spark 2.4.3 and Jupyter notebook).
 * __prepare-airgap-install.sh__: Script to download required files before doing an airgap installation.
 * __forceuninstall-host.sh__: Uninstall Conductor on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
@@ -206,8 +206,12 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
 * __functions/__:
-    * __functions.inc__: Common functions.
-    * __functions-SSL.inc__: Functions to update self-signed certificates and keystores.
+    * __functions.inc__: Include all functions files.
+    * __functions-common.inc__: Common functions for scripts.
+    * __functions-cluster-management.inc__: Functions to manage cluster.
+    * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
+    * __functions-anaconda.inc__: Functions to manage Anaconda distributions and instances.
+    * __functions-instance-groups.inc__: Functions to manage Instance Groups.
     * __update-resource-plan.py__: Script to update resource plan for Instance Groups.
 * __templates/__:
     * __CondaEnv-spark243.yaml__: Conda environment profile for spark243 Instance Group with Deep Learning Frameworks from IBM WMLCE (CPU).
@@ -215,8 +219,8 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __IG-spark243.json__: Instance Group profile for spark243.
 
 ## 6. Comments for SSL Certificates
-* *update-SSL-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/get_started/locating_pmc.html).
-* To import external certificates, do not run *update-SSL-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/manage_cluster/security_https.html).
+* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/get_started/locating_pmc.html).
+* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/manage_cluster/security_https.html).
 
 ## 7. Info
 ### 7.1. Source repository

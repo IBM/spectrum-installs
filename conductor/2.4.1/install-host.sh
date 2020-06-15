@@ -252,4 +252,4 @@ waitForGuiUp
 WEBGUI_URL=`egosh client view GUIURL_1 | awk '/DESCRIPTION/ {print $2}'`
 
 log "Installation on the master host finished!" SUCCESS
-log "You can connect to the web interface: $WEBGUI_URL (Admin / Admin)"
+log "You can connect to the web interface: $WEBGUI_URL ($EGO_ADMIN_USERNAME / $EGO_ADMIN_PASSWORD)"

@@ -88,7 +88,7 @@ echo "waitForClusterUp" >> $SCRIPT_GET_WEBGUI_URL
 echo "waitForGuiUp" >> $SCRIPT_GET_WEBGUI_URL
 echo 'source $INSTALL_DIR/profile.platform' >> $SCRIPT_GET_WEBGUI_URL
 echo "WEBGUI_URL=\`egosh client view GUIURL_1 | awk '/DESCRIPTION/ {print \$2}'\`" >> $SCRIPT_GET_WEBGUI_URL
-echo 'echo "You can connect to the web interface: $WEBGUI_URL (Admin / Admin)"' >> $SCRIPT_GET_WEBGUI_URL
+echo 'echo "You can connect to the web interface: $WEBGUI_URL ($EGO_ADMIN_USERNAME / $EGO_ADMIN_PASSWORD)"' >> $SCRIPT_GET_WEBGUI_URL
 
 log "Installing master host $MASTERHOST"
 runCommandLocalOrRemote $MASTERHOST $SCRIPT_INSTALL_MASTER "true"
