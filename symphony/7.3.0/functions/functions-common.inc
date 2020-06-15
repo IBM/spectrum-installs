@@ -62,19 +62,6 @@ prepareDir() {
 	fi
 }
 
-waitForPortListening() {
-	local PORT=$1
-	netstat -plnt | grep ":$PORT" | grep "LISTEN" >/dev/null 2>&1
-	local CODE=$?
-	while [ $CODE -ne 0 ]
-	do
-		log "Port $PORT not listening ..."
-		sleep $STATUS_CHECK_WAITTIME
-		netstat -plnt | grep ":$PORT" | grep "LISTEN" >/dev/null 2>&1
-		CODE=$?
-	done
-}
-
 runCommandLocalOrRemote() {
 	local HOST_NAME=$1
 	local COMMAND=$2

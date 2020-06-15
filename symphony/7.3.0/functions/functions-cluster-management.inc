@@ -15,19 +15,6 @@ authenticate() {
 	fi
 }
 
-restartCluster() {
-	log "Stop EGO services"
-	egosh service stop all >/dev/null
-	log "Wait for EGO services to be stopped"
-	waitForEgoServicesStopped
-	log "Restart EGO"
-	egosh ego restart -f all 2>&1 | tee -a $LOG_FILE
-	log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
-	sleep $EGO_SHUTDOWN_WAITTIME
-	log "Wait for cluster to start"
-	waitForClusterUp
-}
-
 waitForClusterUp() {
 	source $INSTALL_DIR/profile.platform
 	egosh user logon -u $EGO_ADMIN_USERNAME -x $EGO_ADMIN_PASSWORD >/dev/null 2>&1
@@ -91,25 +78,4 @@ waitForGuiUp() {
 	waitForClientURL REST_BASE_URL_1
 	log "Wait for WEBGUI URL to be available"
 	waitForClientURL GUIURL_1
-}
-
-createUser() {
-	local USERNAME=$1
-	local PASSWORD=$2
-	authenticate
-	egosh user list -ll | grep \"$USERNAME\" > /dev/null 2>&1
-	if [ $? -eq 0 ]
-	then
-		log "User $USERNAME already exists"
-	else
-		egosh user add -u $USERNAME -x $PASSWORD 2>&1 | tee -a $LOG_FILE
-		local CODE=$?
-		if [ $CODE -ne 0 ]
-		then
-			log "Cannot create user $USERNAME (error code: $CODE)" ERROR
-			exit 1
-		else
-			log "User $USERNAME created successfully" SUCCESS
-		fi
-	fi
 }
