@@ -27,6 +27,7 @@ export ANACONDA_DIR=$BASE_INSTALL_DIR/anaconda # Specify base directory where An
 ### INSTALL DIRECTORIES
 export INSTALL_DIR=$BASE_INSTALL_DIR/install # Directory where WMLA will be installed. If INSTALL_TYPE=shared, it must be on shared FS.
 export RPMDB_DIR=$BASE_INSTALL_DIR/rpmdb # Directory for WMLA RPMs database. If INSTALL_TYPE=shared, it must be on shared FS.
+export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
 
 ###### BELOW THIS POINT, YOU CAN KEEP DEFAULT CONFIGURATION UNLESS YOU WANT TO CUSTOMIZE IT #####
 
@@ -39,8 +40,6 @@ export NOTEBOOKS_DIR=$BASE_SHARED_DIR/notebooks # Directory that Jupyter noteboo
 export DLI_SHARED_FS=$BASE_SHARED_DIR/dli_shared_fs # Directory that DLI will use for configurations, binaries and data. It must be on shared FS.
 export DLI_DATA_FS=$BASE_SHARED_DIR/dli_data_fs # Directory that DLI will use for datasets storage. It must be on shared FS.
 export DLI_RESULT_FS=$BASE_SHARED_DIR/dli_result_fs # Directory that DLI will use for user specific job data storage. It must be on shared FS.
-
-export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
 
 ##### ARCHITECTURE (x86_64 or ppc64le)
 export ARCH=`uname -m` # Identify current architecture of the server.

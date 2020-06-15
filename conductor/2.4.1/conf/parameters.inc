@@ -27,6 +27,7 @@ export ANACONDA_DIR=$BASE_INSTALL_DIR/anaconda # Specify base directory where An
 ### INSTALL DIRECTORIES
 export INSTALL_DIR=$BASE_INSTALL_DIR/install # Directory where Conductor will be installed. If INSTALL_TYPE=shared, it must be on shared FS.
 export RPMDB_DIR=$BASE_INSTALL_DIR/rpmdb # Directory for Conductor RPMs database. If INSTALL_TYPE=shared, it must be on shared FS.
+export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
 
 ###### BELOW THIS POINT, YOU CAN KEEP DEFAULT CONFIGURATION UNLESS YOU WANT TO CUSTOMIZE IT #####
 
@@ -35,7 +36,6 @@ export SPARKHA_DIR=$BASE_SHARED_DIR/spark-ha # Directory that Spark of Instance 
 export SPARKHISTORY_DIR=$BASE_SHARED_DIR/spark-history # Directory that Spark History service of Instance Groups will use. It must be on shared FS.
 export SPARKSHUFFLE_DIR=$BASE_SHARED_DIR/spark-shuffle # Directory that Spark Shuffle service of Instance Groups will use. It must be on shared FS.
 export NOTEBOOKS_DIR=$BASE_SHARED_DIR/notebooks # Directory that Jupyter notebooks of Instance Groups will use for data. It must be on shared FS.
-export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
 
 ##### ARCHITECTURE (x86_64 or ppc64le)
 export ARCH=`uname -m` # Identify current architecture of the server.
