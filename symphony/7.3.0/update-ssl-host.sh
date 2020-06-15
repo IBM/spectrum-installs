@@ -6,7 +6,7 @@
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
-export LOG_FILE=$LOG_DIR/update-SSL-host_`hostname -s`.log
+export LOG_FILE=$LOG_DIR/update-ssl-host_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chown $CLUSTERADMIN:$CLUSTERADMIN $LOG_DIR
 
 log "Starting update SSL certificates script"

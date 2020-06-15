@@ -12,7 +12,7 @@ export MASTER_CANDIDATES="server1.domain.com,server2.domain.com" # Specify all o
 
 ### ALL HOSTS INSTALL
 export CLUSTERINSTALL_CREATE_USER_ENVIRONMENT=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create user environment based on parameters below.
-export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will execute update-SSL-host.sh.
+export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will execute update-ssl-host.sh.
 
 ##### DIRECTORIES PARAMETERS
 ### BASE DIRECTORIES

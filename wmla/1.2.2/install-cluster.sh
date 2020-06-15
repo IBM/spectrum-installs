@@ -33,8 +33,8 @@ echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_MASTER
 echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
 if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
 then
-  echo "`dirname "$(readlink -f "$0")"`/update-SSL-host.sh" >> $SCRIPT_INSTALL_MASTER
-  echo "[[ \$? -ne 0 ]] && echo \"Error during execution of update-SSL-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
+  echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MASTER
+  echo "[[ \$? -ne 0 ]] && echo \"Error during execution of update-ssl-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
 fi
 echo "`dirname "$(readlink -f "$0")"`/postinstall-host.sh" >> $SCRIPT_INSTALL_MASTER
 
@@ -48,7 +48,7 @@ then
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MANAGEMENT
   if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
   then
-    echo "`dirname "$(readlink -f "$0")"`/update-SSL-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
+    echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
   fi
 fi
 echo "`dirname "$(readlink -f "$0")"`/postinstall-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
@@ -63,7 +63,7 @@ then
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_COMPUTE
   if [ "$SSL" == "enabled" -a "$CLUSTERINSTALL_UPDATE_SSL" == "enabled" ]
   then
-    echo "`dirname "$(readlink -f "$0")"`/update-SSL-host.sh" >> $SCRIPT_INSTALL_COMPUTE
+    echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_COMPUTE
   fi
 fi
 echo "`dirname "$(readlink -f "$0")"`/postinstall-host.sh" >> $SCRIPT_INSTALL_COMPUTE
