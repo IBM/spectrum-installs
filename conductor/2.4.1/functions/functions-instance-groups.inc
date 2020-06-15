@@ -25,7 +25,6 @@ updateResourcePlanIgConsumers() {
 		log "Failed to export resource plan, aborting the update of resource plan." ERROR
 	else
 		$PYTHON_BIN $UPDATE_RP_SCRIPT -i $RESPLAN_SOURCE -o $RESPLAN_UPDATED -c "$CONSUMER_BASE_NAME-NonMasterWorkload,$CONSUMER_BASE_NAME-Executors" 2>&1 | tee -a $LOG_FILE
-		sed -i 's#ParameterName="DistributeBy" />#ParameterName="DistributeBy"/>#g' $RESPLAN_UPDATED 2>&1 | tee -a $LOG_FILE
 		if [ ${PIPESTATUS[0]} -ne 0 ]
 		then
 			log "Failed to modify resource plan, aborting the update of resource plan." ERROR
