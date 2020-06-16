@@ -163,6 +163,7 @@ deleteApplication() {
 	soamunreg $APP_NAME -f 2>&1 | tee -a $LOG_FILE
 	local CODE=${PIPESTATUS[0]}
 	if [ $CODE -ne 0 ]
+	then
 		log "Failed to delete application $APP_NAME (exit code: $CODE), aborting" ERROR
 		exit 1
 	fi
