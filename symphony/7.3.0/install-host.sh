@@ -173,7 +173,7 @@ waitForClusterUp
 
 if [ "$REMOVE_HADOOP_COMPONENTS" == "enabled" ]
 then
-	log "Wait for REST EGO service to be up"
+	log "Wait for EGO service REST to be up"
 	waitForRestUp
 
 	log "Deleting MapReduce application"
