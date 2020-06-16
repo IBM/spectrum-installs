@@ -23,6 +23,10 @@ echo "#!/bin/sh" > $SCRIPT_DELETE_DIRECTORIES
 chmod +x $SCRIPT_DELETE_DIRECTORIES 2>&1 | tee -a $LOG_FILE
 echo "source `dirname "$(readlink -f "$0")"`/conf/parameters.inc" >> $SCRIPT_DELETE_DIRECTORIES
 echo "if [ -d \"\$EGO_SHARED_DIR\" ]; then rm -rf \$EGO_SHARED_DIR; fi" >> $SCRIPT_DELETE_DIRECTORIES
+if [ "$INSTALL_TYPE" == "shared" ]
+then
+  echo "if [ -d \"\$BASE_INSTALL_DIR\" ]; then rm -rf \$BASE_INSTALL_DIR; fi" >> $SCRIPT_DELETE_DIRECTORIES
+fi
 
 log "Uninstalling master host $MASTERHOST"
 runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/forceuninstall-host.sh" "false"
