@@ -10,6 +10,8 @@ export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as re
 export MASTER_CANDIDATES="server1.domain.com,server2.domain.com" # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",")). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
 
 ### HADOOP INTEGRATION
+export REMOVE_HADOOP_COMPONENTS=enabled # Specify enabled or disabled. If enabled, all EGO services, consumers and resource groups related to Hadoop MapReduce and YARN integration will be removed.
+
 # Optional parameters to define if you are planning to use MapReduce framework and/or YARN integration on Symphony.
 export JAVA_HOME= # Specify path to Java directory to use for MapReduce framework.
 export HADOOP_HOME= # Specify the installation directory of the Hadoop distribution.

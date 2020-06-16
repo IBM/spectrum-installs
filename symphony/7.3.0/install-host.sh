@@ -171,6 +171,34 @@ egosh ego start 2>&1 | tee -a $LOG_FILE
 log "Wait for the cluster to start"
 waitForClusterUp
 
+if [ "$REMOVE_HADOOP_COMPONENTS" == "enabled" ]
+then
+	log "Wait for REST EGO service to be up"
+	waitForRestUp
+
+	log "Deleting MapReduce application"
+	deleteApplication "MapReduce7.3"
+
+	log "Deleting Hadoop EGO services"
+	deleteEgoService "MRSS"
+	deleteEgoService "SecondaryNode"
+	deleteEgoService "NameNode"
+	deleteEgoService "DataNode"
+	deleteEgoService "EGOYARN"
+
+	log "Deleting Hadoop consumers"
+	deleteConsumer "HDFS"
+	deleteConsumer "MapReduceConsumer"
+	deleteConsumer "YARN"
+	deleteConsumer "YARNComputeConsumer"
+
+	log "Deleting Hadoop resource groups"
+	deleteResourceGroup "DataNodeRG"
+	deleteResourceGroup "MapReduceInternalResourceGroup"
+	deleteResourceGroup "NameNodeRG"
+	deleteResourceGroup "SecondaryNodeRG"
+fi
+
 log "Get WEBGUI URL"
 waitForGuiUp
 WEBGUI_URL=`egosh client view GUIURL_1 | awk '/DESCRIPTION/ {print $2}'`
