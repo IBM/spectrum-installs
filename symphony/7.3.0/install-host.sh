@@ -189,6 +189,7 @@ then
 	log "Deleting Hadoop consumers"
 	deleteConsumer "HDFS"
 	deleteConsumer "MapReduceConsumer"
+	deleteConsumer "ComputeServices"
 	deleteConsumer "YARN"
 	deleteConsumer "YARNComputeConsumer"
 
