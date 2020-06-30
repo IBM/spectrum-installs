@@ -199,31 +199,36 @@ waitForClusterUp
 
 if [ "$REMOVE_HADOOP_COMPONENTS" == "enabled" ]
 then
-	log "Wait for EGO service REST to be up"
-	waitForRestUp
+	if [ "$INSTALL_MULTI_HEAD" != "enabled" ]
+	then
+		log "Wait for EGO service REST to be up"
+		waitForRestUp
 
-	log "Deleting MapReduce application"
-	deleteApplication "MapReduce7.3"
+		log "Deleting MapReduce application"
+		deleteApplication "MapReduce7.3"
 
-	log "Deleting Hadoop EGO services"
-	deleteEgoService "MRSS"
-	deleteEgoService "SecondaryNode"
-	deleteEgoService "NameNode"
-	deleteEgoService "DataNode"
-	deleteEgoService "EGOYARN"
+		log "Deleting Hadoop EGO services"
+		deleteEgoService "MRSS"
+		deleteEgoService "SecondaryNode"
+		deleteEgoService "NameNode"
+		deleteEgoService "DataNode"
+		deleteEgoService "EGOYARN"
 
-	log "Deleting Hadoop consumers"
-	deleteConsumer "HDFS"
-	deleteConsumer "MapReduceConsumer"
-	deleteConsumer "ComputeServices"
-	deleteConsumer "YARN"
-	deleteConsumer "YARNComputeConsumer"
+		log "Deleting Hadoop consumers"
+		deleteConsumer "HDFS"
+		deleteConsumer "MapReduceConsumer"
+		deleteConsumer "ComputeServices"
+		deleteConsumer "YARN"
+		deleteConsumer "YARNComputeConsumer"
 
-	log "Deleting Hadoop resource groups"
-	deleteResourceGroup "DataNodeRG"
-	deleteResourceGroup "MapReduceInternalResourceGroup"
-	deleteResourceGroup "NameNodeRG"
-	deleteResourceGroup "SecondaryNodeRG"
+		log "Deleting Hadoop resource groups"
+		deleteResourceGroup "DataNodeRG"
+		deleteResourceGroup "MapReduceInternalResourceGroup"
+		deleteResourceGroup "NameNodeRG"
+		deleteResourceGroup "SecondaryNodeRG"
+	else
+		log "Hadoop components cannot be removed, as they will only be configured when you follow the wizard when you log on to the GUI" WARNING
+	fi
 fi
 
 log "Get WEBGUI URL"
