@@ -74,6 +74,7 @@ Add the list of servers to install (FQDN as returned by "hostname -f" command), 
 
 #### 4.2.1. Symphony
 Either evaluation or entitled version can be used.  
+Evaluation version of Symphony can be downloaded [here](https://epwt-www.mybluemix.net/software/support/trial/cst/welcomepage.wss?siteId=407&tabId=696&w=1&_ga=2.37481056.1963202311.1593446931-1746922340.1591820378&_gac=1.146273606.1592931153.Cj0KCQjw0Mb3BRCaARIsAPSNGpVvs4_x350LirZlBCCNA0vOZjO30Jacgk-lDhTE_4_ZvNNTu_glzkoaAvEoEALw_wcB&cm_mc_uid=21505324293715918203757&cm_mc_sid_50200000=17973571593490217046).  
 
 #### 4.2.2. Ifix 546970
 It can be downloaded [here](https://www.ibm.com/support/fixcentral/swg/downloadFixes?parent=IBM%20Spectrum%20Computing&product=ibm/Other+software/IBM+Spectrum+Symphony&release=7.3&function=fixId&fixids=sym-7.3-build546970).  
