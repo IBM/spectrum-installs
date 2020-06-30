@@ -7,7 +7,7 @@
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/install-cluster_`hostname -s`.log
-[[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chown $CLUSTERADMIN:$CLUSTERADMIN $LOG_DIR
+[[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
 log "Starting cluster installation"
 
@@ -17,7 +17,7 @@ log "Starting cluster installation"
 [[ ! -f $COMPUTEHOSTS_FILE ]] && log "File $COMPUTEHOSTS_FILE containing list of compute hosts doesn't exist, aborting" ERROR && exit 1
 
 log "Preparing install scripts in $SCRIPTS_TMP_DIR"
-[[ ! -d $SCRIPTS_TMP_DIR ]] && prepareDir $SCRIPTS_TMP_DIR $CLUSTERADMIN
+[[ ! -d $SCRIPTS_TMP_DIR ]] && mkdir -p $SCRIPTS_TMP_DIR
 SCRIPT_INSTALL_MASTER=$SCRIPTS_TMP_DIR/install-master-host.sh
 SCRIPT_INSTALL_MANAGEMENT=$SCRIPTS_TMP_DIR/install-management-host.sh
 SCRIPT_INSTALL_COMPUTE=$SCRIPTS_TMP_DIR/install-compute-host.sh

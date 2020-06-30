@@ -7,7 +7,7 @@
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/forceuninstall-host_`hostname -s`.log
-[[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chown $CLUSTERADMIN:$CLUSTERADMIN $LOG_DIR
+[[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
 log "Starting force uninstall host script"
 
