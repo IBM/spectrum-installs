@@ -12,7 +12,7 @@ export LOG_FILE=$LOG_DIR/install-host_`hostname -s`.log
 log "Starting host installation"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1
-[[ -d $BASE_INSTALL_DIR ]] && log "Base install dir $BASE_INSTALL_DIR already exists, aborting" ERROR && exit 1
+[[ "$INSTALL_MULTI_HEAD" != "enabled" && -d $BASE_INSTALL_DIR ]] && log "Base install dir $BASE_INSTALL_DIR already exists, aborting" ERROR && exit 1
 
 [[ ! -f $MANAGEMENTHOSTS_FILE ]] && log "File $MANAGEMENTHOSTS_FILE containing list of management hosts doesn't exist, aborting" ERROR && exit 1
 
@@ -22,6 +22,21 @@ log "Starting host installation"
 log "Identify the type of current host (master, management or compute)"
 determineHostType
 log "Current host is $HOST_TYPE"
+
+if [ "$INSTALL_MULTI_HEAD" == "enabled" ]
+then
+	log "Doing multi-head installation"
+
+	if [ "$HOST_TYPE" == "MASTER" ]
+	then
+		log "Stopping the cluster"
+		stopEgoServices
+		log "Stop EGO on all hosts"
+		egosh ego shutdown -f all 2>&1 | tee -a $LOG_FILE
+		log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes are stopped"
+		sleep $EGO_SHUTDOWN_WAITTIME
+	fi
+fi
 
 export IBM_SPECTRUM_SYMPHONY_LICENSE_ACCEPT=Y
 export SIMPLIFIEDWEM=N
@@ -111,8 +126,11 @@ else
 	fi
 fi
 
-log "Join cluster"
-su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig join $MASTERHOST -f" 2>&1 | tee -a $LOG_FILE
+if [ "$INSTALL_MULTI_HEAD" != "enabled" ]
+then
+	log "Join cluster"
+	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig join $MASTERHOST -f" 2>&1 | tee -a $LOG_FILE
+fi
 
 if [ "$HOST_TYPE" == "COMPUTE" ]
 then
@@ -130,8 +148,16 @@ then
 fi
 
 log "Define settings in ego.conf"
-echo "EGO_ENABLE_BORROW_ONLY_CONSUMER=Y" >> $INSTALL_DIR/kernel/conf/ego.conf
-echo "EGO_RSH=ssh" >> $INSTALL_DIR/kernel/conf/ego.conf
+grep "EGO_ENABLE_BORROW_ONLY_CONSUMER=Y" $INSTALL_DIR/kernel/conf/ego.conf > /dev/null
+if [ $? != 0 ]
+then
+	echo "EGO_ENABLE_BORROW_ONLY_CONSUMER=Y" >> $INSTALL_DIR/kernel/conf/ego.conf
+fi
+grep "EGO_RSH=ssh" $INSTALL_DIR/kernel/conf/ego.conf > /dev/null
+if [ $? != 0 ]
+then
+	echo "EGO_RSH=ssh" >> $INSTALL_DIR/kernel/conf/ego.conf
+fi
 
 if [ "$EGO_SHARED_DIR" != "" ]
 then

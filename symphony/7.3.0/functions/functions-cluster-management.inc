@@ -15,6 +15,14 @@ authenticate() {
 	fi
 }
 
+stopEgoServices() {
+	authenticate
+	log "Stop EGO services"
+	egosh service stop all >/dev/null
+	log "Wait for EGO services to be stopped"
+	waitForEgoServicesStopped
+}
+
 waitForClusterUp() {
 	source $INSTALL_DIR/profile.platform
 	egosh user logon -u $EGO_ADMIN_USERNAME -x $EGO_ADMIN_PASSWORD >/dev/null 2>&1

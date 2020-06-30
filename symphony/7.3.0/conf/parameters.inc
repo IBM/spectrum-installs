@@ -9,6 +9,9 @@ export SSL=enabled # Specify enabled or disabled. If enabled, all web interfaces
 export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as returned by "hostname -f".
 export MASTER_CANDIDATES="server1.domain.com,server2.domain.com" # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",")). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
 
+### MULTI-HEAD INSTALL
+export INSTALL_MULTI_HEAD=disabled # Specify enabled or disabled. If enabled, the scripts will install Symphony on an existing Conductor or WMLA cluster. Directories INSTALL_DIR, RPMDB_DIR and EGO_SHARED_DIR (if specified) must be the same than those used during Conductor / WMLA installation. EGO_ADMIN_USERNAME and EGO_ADMIN_PASSWORD also need to be updated with current credentials of Admin user.
+
 ### HADOOP INTEGRATION
 export REMOVE_HADOOP_COMPONENTS=enabled # Specify enabled or disabled. If enabled, all EGO services, consumers and resource groups related to Hadoop MapReduce and YARN integration will be removed.
 
@@ -59,8 +62,8 @@ export INSTALL_FROM_RPMS=disabled # Specify enabled or disabled. If enabled, the
 export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM_RPMS=enabled. Specify directory where RPMs will be extracted.
 
 ### EGO DEFAULT SETTINGS
-export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation.
-export EGO_ADMIN_PASSWORD=Admin # Default Admin password after EGO installation.
+export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation, or current Admin username if INSTALL_MULTI_HEAD=enabled.
+export EGO_ADMIN_PASSWORD=Admin # Default Admin password after EGO installation, or current Admin password if INSTALL_MULTI_HEAD=enabled.
 
 ### SSL
 export SSL_TMP_DIR=$CACHE_DIR/ssl-files # Directory where SSL files will be written from the master host and need to be read by all other hosts. Need to be shared filesystem.

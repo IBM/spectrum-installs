@@ -31,7 +31,7 @@ echo "`dirname "$(readlink -f "$0")"`/prepare-host.sh" >> $SCRIPT_INSTALL_MASTER
 echo "[[ \$? -ne 0 ]] && echo \"Error during execution of prepare-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
 echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_MASTER
 echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
-if [ "$SSL" == "enabled" ]
+if [ "$SSL" == "enabled" -a "$INSTALL_MULTI_HEAD" != "enabled" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MASTER
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of update-ssl-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MASTER
@@ -46,7 +46,7 @@ if [ "$INSTALL_TYPE" == "local" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_MANAGEMENT
-  if [ "$SSL" == "enabled" ]
+  if [ "$SSL" == "enabled" -a "$INSTALL_MULTI_HEAD" != "enabled" ]
   then
     echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_MANAGEMENT
   fi
@@ -61,7 +61,7 @@ if [ "$INSTALL_TYPE" == "local" ]
 then
   echo "`dirname "$(readlink -f "$0")"`/install-host.sh" >> $SCRIPT_INSTALL_COMPUTE
   echo "[[ \$? -ne 0 ]] && echo \"Error during execution of install-host.sh, aborting\" && exit 1" >> $SCRIPT_INSTALL_COMPUTE
-  if [ "$SSL" == "enabled" ]
+  if [ "$SSL" == "enabled" -a "$INSTALL_MULTI_HEAD" != "enabled" ]
   then
     echo "`dirname "$(readlink -f "$0")"`/update-ssl-host.sh" >> $SCRIPT_INSTALL_COMPUTE
   fi
@@ -109,7 +109,7 @@ then
     runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
     log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
     sleep $EGO_SHUTDOWN_WAITTIME
-    if [ "$MASTER_CANDIDATES" != "" ]
+    if [ "$MASTER_CANDIDATES" != "" -a "$INSTALL_MULTI_HEAD" != "enabled" ]
     then
       log "Configuring master candidates list"
       runCommandLocalOrRemote $MASTERHOST $SCRIPT_CONFIGURE_MASTER_CANDIDATES "false"
@@ -141,7 +141,7 @@ else
     runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
     log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
     sleep $EGO_SHUTDOWN_WAITTIME
-    if [ "$MASTER_CANDIDATES" != "" ]
+    if [ "$MASTER_CANDIDATES" != "" -a "$INSTALL_MULTI_HEAD" != "enabled" ]
     then
       log "Configuring master candidates list"
       runCommandLocalOrRemote $MASTERHOST $SCRIPT_CONFIGURE_MASTER_CANDIDATES "false"
