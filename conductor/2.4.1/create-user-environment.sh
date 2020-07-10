@@ -42,7 +42,7 @@ log "Creating user $IG_USER_NAME"
 createUser $IG_USER_NAME $IG_USER_PASSWORD
 
 log "Creating consumers for instance group $IG_SPARK243_NAME"
-createIgConsumers $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /$IG_SPARK243_NAME $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
 updateResourcePlanIgConsumers $IG_SPARK243_NAME
 
 log "Create $IG_SPARK243_CONDA_ENV_NAME conda environment and wait for successful deployment"

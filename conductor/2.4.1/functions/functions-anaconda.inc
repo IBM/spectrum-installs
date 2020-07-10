@@ -163,6 +163,37 @@ modifyCondaEnvironmentProfileWithLocalChannel() {
 	eval $__resultvar="'$CONDA_ENV_PROFILE_TEMPLATE_UPDATED'"
 }
 
+getAnacondaDistributions() {
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/distributions`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export ANACONDA_DISTRIBUTIONS=$RESPONSE
+	else
+		log "Failed to retrieve Anaconda distributions (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+getAnacondaDistribution() {
+	local ANACONDA_DISTRIBUTION_ID=$1
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/distributions/$ANACONDA_DISTRIBUTION_ID`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export ANACONDA_DISTRIBUTION_DETAILS=$RESPONSE
+	else
+		log "Failed to retrieve Anaconda distribution with id $ANACONDA_DISTRIBUTION_ID (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
 createAnacondaDistribution() {
 	local ANACONDA_DISTRIBUTION_ID=$1
 	getRestUrls
@@ -181,6 +212,37 @@ createAnacondaDistribution() {
 		log "Anaconda distribution $ANACONDA_DISTRIBUTION_NAME created successfully" SUCCESS
 	else
 		log "Failed to create anaconda distribution $ANACONDA_DISTRIBUTION_NAME (HTTP CODE $HTTP_CODE), aborting. Output of creation tentative:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+getAnacondaInstances(){
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export ANACONDA_INSTANCES=$RESPONSE
+	else
+		log "Failed to retrieve Anaconda instances (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+getAnacondaInstance() {
+	local ANACONDA_INSTANCE_ID=$1
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_ID`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export ANACONDA_INSTANCE_DETAILS=$RESPONSE
+	else
+		log "Failed to retrieve Anaconda instance with id $ANACONDA_INSTANCE_ID (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
 		log "$RESPONSE" ERROR
 		exit 1
 	fi
@@ -344,6 +406,39 @@ removeCondaEnvironment() {
 	log "Conda environment deleted successfully"
 }
 
+getCondaEnvs(){
+	local ANACONDA_INSTANCE_ID=$1
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_ID/environments`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export CONDA_ENVIRONMENTS=$RESPONSE
+	else
+		log "Failed to retrieve conda environments of Anaconda instance $ANACONDA_INSTANCE_ID (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+getCondaEnv(){
+	local ANACONDA_INSTANCE_ID=$1
+	local CONDA_ENV_NAME=$2
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_ID/environments/$CONDA_ENV_NAME`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export CONDA_ENVIRONMENT_DETAILS=$RESPONSE
+	else
+		log "Failed to retrieve conda environment $CONDA_ENV_NAME of Anaconda instance $ANACONDA_INSTANCE_ID (HTTP CODE $HTTP_CODE), aborting. Output of REST call:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
 getAnacondaInstanceUUID() {
 	local ANACONDA_INSTANCE_NAME=$1
 	getRestUrls
@@ -384,9 +479,70 @@ deleteAnacondaDistribution() {
 	local HTTP_CODE=${CURL_OUT:(-3)}
 	if [ "$HTTP_CODE" == "204" ]
 	then
-		log "Anaconda distribution $ANACONDA_DISTRIBUTION_ID delete operation started started successfully" SUCCESS
+		log "Anaconda distribution $ANACONDA_DISTRIBUTION_ID delete operation started successfully" SUCCESS
 	else
 		log "Failed to start deletion of Anaconda distribution $ANACONDA_DISTRIBUTION_ID (HTTP CODE $HTTP_CODE). Output of deletion tentative:" WARNING
 		log "$RESPONSE" WARNING
+	fi
+}
+
+deleteAnacondaInstance() {
+	local ANACONDA_INSTANCE_ID=$1
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Accept: application/json" -X DELETE ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_ID`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "204" ]
+	then
+		log "Anaconda instance $ANACONDA_INSTANCE_ID delete operation started successfully" SUCCESS
+	else
+		log "Failed to start deletion of Anaconda instance $ANACONDA_INSTANCE_ID (HTTP CODE $HTTP_CODE). Output of deletion tentative:" WARNING
+		log "$RESPONSE" WARNING
+	fi
+}
+
+getAnacondaDistributionExistence(){
+	local ANACONDA_DISTRIBUTION_ID=$1
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET ${ASCD_REST_BASE_URL}conductor/v1/anaconda/distributions/$ANACONDA_DISTRIBUTION_ID`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export ANACONDA_DISTRIBUTION_EXIST=true
+	else
+		export ANACONDA_DISTRIBUTION_EXIST=false
+	fi
+}
+
+getAnacondaInstanceExistence(){
+	local ANACONDA_INSTANCE_NAME=$1
+	export ANACONDA_INSTANCE_EXIST=false
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		echo $RESPONSE | $PYTHON_BIN -c $'import sys,json\nais=json.load(sys.stdin)\nfor ai in ais:\n  if (ai["name"]=="'$ANACONDA_INSTANCE_NAME'"): print "exists"' | grep "exists" >/dev/null 2>&1
+		if [ $? -eq 0 ]
+		then
+			export ANACONDA_INSTANCE_EXIST=true
+		fi
+	fi
+}
+
+getCondaEnvExistence(){
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_NAME=$2
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments/$CONDA_ENV_NAME`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "200" ]
+	then
+		export CONDA_ENV_EXIST=true
+	else
+		export CONDA_ENV_EXIST=false
 	fi
 }
