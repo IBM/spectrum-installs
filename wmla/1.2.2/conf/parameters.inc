@@ -8,7 +8,7 @@ export CLUSTERADMIN=egoadmin # OS user who will be cluster admin.
 export CLUSTERNAME=WMLA # Display name of the cluster.
 export SSL=enabled # Specify enabled or disabled. If enabled, all web interfaces and REST services will use SSL.
 export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as returned by "hostname -f".
-export MASTER_CANDIDATES="server1.domain.com,server2.domain.com" # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",")). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
+export MASTER_CANDIDATES= # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",") and complete list enclosed with double quote). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
 
 ### ALL HOSTS INSTALL
 export CLUSTERINSTALL_CREATE_USER_ENVIRONMENT=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create user environment based on parameters below.
@@ -18,7 +18,7 @@ export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabl
 ### BASE DIRECTORIES
 export BASE_INSTALL_DIR=/opt/ibm/spectrum # If INSTALL_TYPE=shared, this directory must be on shared FS.
 export BASE_SHARED_DIR=/opt/nfs/spectrum-share # Must be on shared FS.
-export EGO_SHARED_DIR=$BASE_SHARED_DIR/spectrum-ha # Optional, specify the EGO shared directory to use for High Availability (only useful if there are multiple management hosts). Must be on shared FS.
+export EGO_SHARED_DIR= # Optional, specify the EGO shared directory to use for High Availability (only useful if there are multiple management hosts). Must be on shared FS.
 
 ### DEPLOYMENT DIRECTORIES
 export IG_DIR=$BASE_INSTALL_DIR/instance-groups # Specify base directory where Instance Groups will be deployed. If INSTALL_TYPE=shared or DEPLOYMENT_TYPE=shared, it must be on shared FS.
