@@ -7,7 +7,7 @@ export CLUSTERADMIN=egoadmin # OS user who will be cluster admin.
 export CLUSTERNAME=Symphony # Display name of the cluster.
 export SSL=enabled # Specify enabled or disabled. If enabled, all web interfaces and REST services will use SSL.
 export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as returned by "hostname -f".
-export MASTER_CANDIDATES="server1.domain.com,server2.domain.com" # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",")). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
+export MASTER_CANDIDATES= # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",") and complete list enclosed with double quote). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
 
 ### MULTI-HEAD INSTALL
 export INSTALL_MULTI_HEAD=disabled # Specify enabled or disabled. If enabled, the scripts will install Symphony on an existing Conductor or WMLA cluster. Directories INSTALL_DIR, RPMDB_DIR and EGO_SHARED_DIR (if specified) must be the same than those used during Conductor / WMLA installation. EGO_ADMIN_USERNAME and EGO_ADMIN_PASSWORD also need to be updated with current credentials of Admin user.
@@ -26,7 +26,7 @@ export HADOOP_YARN_HOME= # Specify the installation directory for full distribut
 ##### DIRECTORIES PARAMETERS
 ### BASE DIRECTORIES
 export BASE_INSTALL_DIR=/opt/ibm/spectrum # If INSTALL_TYPE=shared, this directory must be on shared FS.
-export EGO_SHARED_DIR=/opt/nfs/spectrum-ego-share # Optional, specify the EGO shared directory to use for High Availability (only useful if there are multiple management hosts). Must be on shared FS.
+export EGO_SHARED_DIR= # Optional, specify the EGO shared directory to use for High Availability (only useful if there are multiple management hosts). Must be on shared FS.
 
 ###### BELOW THIS POINT, YOU CAN KEEP DEFAULT CONFIGURATION UNLESS YOU WANT TO CUSTOMIZE IT #####
 
