@@ -23,9 +23,9 @@ log() {
 			ERROR) COLOR=$COLOR_RED ;;
 			*) COLOR= ;;
 		esac
-		echo ${COLOR}`date "+%Y-%m-%d %H-%M-%S"` $1${COLOR_RESET}
+		echo ${COLOR}`date "+%Y-%m-%d %H:%M:%S"` $1${COLOR_RESET}
 
-		echo `date "+%Y-%m-%d %H-%M-%S"` - $LOG_TYPE - $1 >> $LOG_FILE
+		echo `date "+%Y-%m-%d %H:%M:%S"` - $LOG_TYPE - $1 >> $LOG_FILE
 	fi
 }
 
