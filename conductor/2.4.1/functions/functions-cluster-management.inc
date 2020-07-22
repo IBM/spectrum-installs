@@ -45,9 +45,9 @@ waitForEgoServiceStarted() {
 	local SERVICE_NAME=$1
 	authenticate
 	local SERVICE_STATE=`egosh service list -ll | grep \"$SERVICE_NAME\" | awk -F"," '{print $7}' | sed -e 's/\"//g'`
-	while [ $SERVICE_STATE != "STARTED" ]
+	while [ "$SERVICE_STATE" != "STARTED" ]
 	do
-		if [ $SERVICE_STATE == "ERROR" ]
+		if [ "$SERVICE_STATE" == "ERROR" ]
 		then
 			log "Service $SERVICE_NAME is in ERROR, aborting" ERROR
 			exit 1
