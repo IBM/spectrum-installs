@@ -166,7 +166,7 @@ su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig master
 ```bash
 ./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
-3. Shared install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-ssl-host.sh* is executed on master host before executing it on other hosts):
+3. Shared install / SSL enabled - Execute on additional management hosts and compute hosts:
 ```bash
 ../prepare-host.sh && ./postinstall-host.sh
 ```
