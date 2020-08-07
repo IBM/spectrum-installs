@@ -134,7 +134,7 @@ Copy the files prepared by *prepare-airgap-install.sh* in the scripts folder whi
 ### 4.4. Install the cluster
 
 #### 4.4.1. Installing all hosts (recommended)
-This is the recommended approach at it will install all hosts of the cluster automatically.
+This is the recommended approach as it will install all hosts of the cluster automatically.
 Execute the following script, as root, on any server having password-less ssh access to all hosts of the cluster:
 ```bash
 ./install-cluster.sh
