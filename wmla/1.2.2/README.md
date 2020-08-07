@@ -221,13 +221,13 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
 * __functions/__:
-      * __functions.inc__: Include all functions files.
-      * __functions-common.inc__: Common functions for scripts.
-      * __functions-cluster-management.inc__: Functions to manage cluster.
-      * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
-      * __functions-anaconda.inc__: Functions to manage Anaconda distributions and instances.
-      * __functions-instance-groups.inc__: Functions to manage Instance Groups.
-      * __update-resource-plan.py__: Script to update resource plan for Instance Groups.
+    * __functions.inc__: Include all functions files.
+    * __functions-common.inc__: Common functions for scripts.
+    * __functions-cluster-management.inc__: Functions to manage cluster.
+    * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
+    * __functions-anaconda.inc__: Functions to manage Anaconda distributions and instances.
+    * __functions-instance-groups.inc__: Functions to manage Instance Groups.
+    * __update-resource-plan.py__: Script to update resource plan for Instance Groups.
 * __templates/__:
     * __CondaEnv-dlinsights.yaml__: Conda environment profile for dlinsights EGO service.
     * __CondaEnv-dli.yaml__: Conda environment profile for dliedt Instance Group.
