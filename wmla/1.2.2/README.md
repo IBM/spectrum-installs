@@ -220,7 +220,7 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
-  * __functions/__:
+* __functions/__:
       * __functions.inc__: Include all functions files.
       * __functions-common.inc__: Common functions for scripts.
       * __functions-cluster-management.inc__: Functions to manage cluster.
