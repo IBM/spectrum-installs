@@ -29,7 +29,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 * Ifix 546962 for WEBGUI (login issue due to cookie setting not recognized in Chrome and Safari)
 
 ## 3. Pre-requisites
-* Servers need to be installed on a supported OS version (RHEL 7.6) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_hwandsw_reqs.html).
+* Servers need to be installed on a supported OS version (RHEL 7.7 on x86, RHEL 7.6 on Power) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_hwandsw_reqs.html).
 * If there are GPUs in server, nvidia driver needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
