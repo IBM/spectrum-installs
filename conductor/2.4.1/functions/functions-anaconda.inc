@@ -134,6 +134,7 @@ prepareLocalCondaChannel() {
 			exit 1
 		fi
 		log "Anaconda local channel directory doesn't exist, creating it from archive $ANACONDA_LOCAL_CHANNEL_ARCHIVE"
+		prepareDir $ANACONDA_LOCAL_CHANNEL_DIR $CLUSTERADMIN
 		tar xzf $ANACONDA_LOCAL_CHANNEL_ARCHIVE -C $ANACONDA_LOCAL_CHANNEL_DIR 2>&1 | tee -a $LOG_FILE
 		CODE=${PIPESTATUS[0]}
 		if [ $CODE -ne 0 ]

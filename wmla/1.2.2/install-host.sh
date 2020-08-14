@@ -12,7 +12,7 @@ export LOG_FILE=$LOG_DIR/install-host_`hostname -s`.log
 log "Starting host installation"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1
-[[ -d $BASE_INSTALL_DIR ]] && log "Base install dir $BASE_INSTALL_DIR already exists, aborting" ERROR && exit 1
+[[ -d $BASE_INSTALL_DIR && ! -z "$(ls -A $BASE_INSTALL_DIR)" ]] && log "Base install dir $BASE_INSTALL_DIR already exists and is not empty, aborting" ERROR && exit 1
 
 [[ ! -f $MANAGEMENTHOSTS_FILE ]] && log "File $MANAGEMENTHOSTS_FILE containing list of management hosts doesn't exist, aborting" ERROR && exit 1
 
