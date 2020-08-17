@@ -97,6 +97,7 @@ createLocalCondaChannel() {
 		*) log "Unsupported architecture (`uname -m`), aborting" ERROR && exit 1 ;;
 	esac
 	mv $ANACONDA_INSTALL_DIR/pkgs/*.bz2 $ANACONDA_LOCAL_CHANNEL_ARCH_DIR 2>&1 | tee -a $LOG_FILE
+	mv $ANACONDA_INSTALL_DIR/pkgs/*.conda $ANACONDA_LOCAL_CHANNEL_ARCH_DIR 2>&1 | tee -a $LOG_FILE
 	log "Deleting conda environments"
 	while [ $ANACONDA_ENV_ID -gt 0 ]
 	do
