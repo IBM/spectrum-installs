@@ -73,10 +73,12 @@ export IG_SPARK243_NAME=ig-spark243 # Name of Instance Group to create with Spar
 export IG_SPARK243_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-spark243.json # JSON profile for IG_SPARK243_NAME Instance Group.
 export IG_SPARK243_CONDA_ENV_NAME=spark243 # Name of conda environment to create, which will be used by IG_SPARK243_NAME Instance Group.
 export IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-spark243.yaml # YAML profile for IG_SPARK243_CONDA_ENV_NAME conda environment.
-export IG_DLI_NAME=ig-dliedt # Name of Instance Group to create for Deep Learning Impact.
-export IG_DLI_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-dliedt.json # JSON profile for IG_DLI_NAME Instance Group.
-export IG_DLI_CONDA_ENV_NAME=dli # Name of conda environment to create, which will be used by IG_DLI_NAME Instance Group.
+export IG_DLI_CONDA_ENV_NAME=dli # Name of conda environment to create, which will be used by IG_DLI_NAME and IG_DLIEDT_NAME Instance Groups.
 export IG_DLI_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-dli.yaml # YAML profile for IG_DLI_CONDA_ENV_NAME conda environment.
+export IG_DLI_NAME=ig-dli # Name of Instance Group to create for Deep Learning Impact without EDT.
+export IG_DLI_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-dli.json # JSON profile for IG_DLI_NAME Instance Group.
+export IG_DLIEDT_NAME=ig-dliedt # Name of Instance Group to create for Deep Learning Impact with EDT.
+export IG_DLIEDT_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-dliedt.json # JSON profile for IG_DLIEDT_NAME Instance Group.
 export IG_DEPLOY_TIMEOUT=600 # Timeout in seconds for Instance Group deployment.
 
 ##### PATH TO BINARIES

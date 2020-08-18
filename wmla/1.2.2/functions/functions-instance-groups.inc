@@ -61,6 +61,73 @@ findIgPorts() {
 	findIgPort SPARK_EGO_LOGSERVICE_PORT "SPARK_EGO_LOGSERVICE_PORT" 28082
 }
 
+createIgDli() {
+        local IG_PROFILE_TEMPLATE=$1
+        local CONSUMER_BASE=$2
+        local IG_NAME=$3
+        local EXECUTION_USER=$4
+        local DEPLOYMENT_BASEDIR=$5
+        local SPARKHA_BASEDIR=$6
+        local SPARKHISTORY_BASE_DIR=$7
+        local RG_CPU=$8
+        local RG_GPU=${9}
+        local DLI_CONDA_ENV_NAME=${10}
+				local DLI_SHAREDFS_CONF_DIR=${11}
+				local DLI_SHAREDFS_DISTRIB_WORKLOAD_DIR=${12}
+        local DLI_CONDA_HOME=${13}
+        local SPARKSHUFFLE_SERVICE_ENABLED=${14} # Expect "true" or "false"
+        if [ "$SPARKSHUFFLE_SERVICE_ENABLED" == "false" ]
+        then
+                local SPARKSHUFFLE_BASE_DIR=${15}
+        fi
+        local TMP_IG_PROFILE=/tmp/ig-profile-`date | md5sum | head -c8`.json
+        local CONSUMER_BASE=${CONSUMER_BASE//\//\\\/}
+        local DEPLOYMENT_BASEDIR_TMP=${DEPLOYMENT_BASEDIR//\//\\\/}
+        local SPARKHA_BASEDIR_TMP=${SPARKHA_BASEDIR//\//\\\/}
+        local SPARKHISTORY_BASE_DIR_TMP=${SPARKHISTORY_BASE_DIR//\//\\\/}
+				local DLI_SHAREDFS_CONF_DIR_TMP=${DLI_SHAREDFS_CONF_DIR//\//\\\/}
+				local DLI_SHAREDFS_DISTRIB_WORKLOAD_DIR_TMP=${DLI_SHAREDFS_DISTRIB_WORKLOAD_DIR//\//\\\/}
+        local DLI_CONDA_HOME_TMP=${DLI_CONDA_HOME//\//\\\/}
+        getRestUrls
+        findIgPorts
+        log "Preparing IG profile $TMP_IG_PROFILE using template $IG_PROFILE_TEMPLATE"
+        cp $IG_PROFILE_TEMPLATE $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##CONSUMER_BASE##/'$CONSUMER_BASE'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##IG_NAME##/'$IG_NAME'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##RG_CPU##/'$RG_CPU'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        if [ "$RG_CPU" == "$RG_GPU" ]
+        then
+                sed -i 's/"executor_gpu_rg_param":"##RG_GPU##"\,//g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+                sed -i 's/"SPARK_EGO_AUTOSCALE_GPU_SLOTS_PER_TASK": "1,2,4"\,//g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        else
+                sed -i 's/##RG_GPU##/'$RG_GPU'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        fi
+        sed -i 's/##EXECUTION_USER##/'$EXECUTION_USER'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##DEPLOYMENT_BASEDIR##/'$DEPLOYMENT_BASEDIR_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##SPARKHA_BASEDIR##/'$SPARKHA_BASEDIR_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##SPARKHISTORY_BASE_DIR##/'$SPARKHISTORY_BASE_DIR_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##SPARK_MASTER_PORT##/'$SPARK_MASTER_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##SPARK_MASTER_WEBUI_PORT##/'$SPARK_MASTER_WEBUI_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##SPARK_MASTER_REST_PORT##/'$SPARK_MASTER_REST_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        if [ "$SPARKSHUFFLE_SERVICE_ENABLED" == "true" ]
+        then
+                sed -i 's/##SPARK_SHUFFLE_SERVICE_PORT##/'$SPARK_SHUFFLE_SERVICE_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        else
+                local SPARK_LOCAL_DIR=$SPARKSHUFFLE_BASE_DIR/$IG_NAME
+                sed -i 's#"spark.shuffle.service.port.*$#"spark.shuffle.service.enabled": "false",\n              "spark.local.dir": "'$SPARK_LOCAL_DIR'",#' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        fi
+        sed -i 's/##SPARK_HISTORY_UI_PORT##/'$SPARK_HISTORY_UI_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+				sed -i 's/##SPARK_EGO_LOGSERVICE_PORT##/'$SPARK_EGO_LOGSERVICE_PORT'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##CONDA_ENV_NAME##/'$DLI_CONDA_ENV_NAME'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        sed -i 's/##DLI_CONDA_HOME##/'$DLI_CONDA_HOME_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+				sed -i 's/##DLI_SHAREDFS_CONF_DIR##/'$DLI_SHAREDFS_CONF_DIR_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+				sed -i 's/##DLI_SHAREDFS_DISTRIB_WORKLOAD_DIR##/'$DLI_SHAREDFS_DISTRIB_WORKLOAD_DIR_TMP'/g' $TMP_IG_PROFILE 2>&1 | tee -a $LOG_FILE
+        registerIg $TMP_IG_PROFILE
+        rm -f $TMP_IG_PROFILE
+        deployIg $IG_UUID
+        startIg $IG_UUID
+}
+
 createIgDliEdt() {
         local IG_PROFILE_TEMPLATE=$1
         local CONSUMER_BASE=$2
