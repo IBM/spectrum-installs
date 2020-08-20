@@ -136,6 +136,7 @@ Edit following parameters in *conf/parameters.inc* in order to enable conda loca
 * *ANACONDA_LOCAL_CHANNEL*: Enable local channel.
 * *ANACONDA_LOCAL_DISTRIBUTION_NAME*: Anaconda distribution to use to create the local conda channel.
 * *ANACONDA_DISTRIBUTION_NAME_TO_ADD*: New Anaconda distribution to download, which will be added to WMLA.
+* *ANACONDA_LOCAL_CHANNEL_STRICT*: If enabled, enforce anaconda to not connect to Internet.
 
 #### 4.3.2. Download and prepare required files
 In order to download Anaconda distribution and create the local conda channel, execute the following script on a server with Internet access, which has the same architecture (x86_64 or ppc64le) than the target environment, and where the user defined in *CLUSTERADMIN* of *conf/parameters.inc* exists:
