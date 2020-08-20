@@ -158,6 +158,8 @@ The installation of WMLA requires in most case files and packages which need to 
 
 Follow the steps below to download and prepare these files.  
 
+If both *ANACONDA_LOCAL_CHANNEL* and *ANACONDA_AIRGAP_INSTALL* are enabled, airgap install method will be used to create the conda environments, and not the local conda channel.  
+
 #### 4.4.1. Install OS packages
 
 Check if the OS packages required by WMLA are already installed on the servers, and if not install them either from local repository or by downloading and installing them manually.  
