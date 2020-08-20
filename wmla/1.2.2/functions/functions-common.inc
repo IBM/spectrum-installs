@@ -54,7 +54,13 @@ prepareDir() {
 		log "Cannot create directory $DIR_PATH, aborting" ERROR
 		exit 1
 	fi
-	chown $OWNER:$OWNER $DIR_PATH 2>&1 | tee -a $LOG_FILE
+	changeOwnershipDir $DIR_PATH $OWNER
+}
+
+changeOwnershipDir() {
+	local DIR_PATH=$1
+	local OWNER=$2
+	chown -R $OWNER:$OWNER $DIR_PATH 2>&1 | tee -a $LOG_FILE
 	if [ ${PIPESTATUS[0]} -ne 0 ]
 	then
 		log "Cannot change ownership of directory $DIR_PATH to $OWNER, aborting" ERROR
@@ -109,4 +115,12 @@ runCommandLocalOrRemote() {
 			fi
 		fi
 	fi
+}
+
+trim() {
+	local var="$1"
+	local __resultvar=$2
+	var="${var#"${var%%[![:space:]]*}"}"
+	var="${var%"${var##*[![:space:]]}"}"
+	eval $__resultvar="'$var'"
 }

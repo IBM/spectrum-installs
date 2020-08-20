@@ -121,12 +121,22 @@ export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM
 export CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT=120 # Duration in seconds to wait for compute hosts to join the cluster before creating User Environment (only used by install-cluster.sh).
 
 ### ANACONDA LOCAL CHANNEL
-export ANACONDA_LOCAL_CHANNEL=disabled # Specify enabled or disabled. If enabled, installation of conda environments will be done using the local channel from ANACONDA_LOCAL_CHANNEL_DIR if folder exists, or from ANACONDA_LOCAL_CHANNEL_ARCHIVE if file exists.
+export ANACONDA_LOCAL_CHANNEL=disabled # Specify enabled or disabled. If enabled, script prepare-airgap-install.sh will create the conda local channel, and installation of conda environments will be done using the local channel from ANACONDA_LOCAL_CHANNEL_DIR if folder exists, or from ANACONDA_LOCAL_CHANNEL_ARCHIVE if file exists.
+export ANACONDA_LOCAL_CONDA_ENV_CREATION_TYPE=profile # Specify profile or twosteps. If profile is specified, conda environment will be created with the profile. If twosteps if specified, empty conda environment will be created first, then packages from the profile will be installed.
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
 export ANACONDA_LOCAL_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
 export ANACONDA_LOCAL_CHANNEL_DIR=$CACHE_DIR/anaconda-local-channel # Only required if you use prepare-airgap-install.sh. Specify the directory of the local conda channel.
 export ANACONDA_LOCAL_CHANNEL_ARCHIVE=$CACHE_DIR/anaconda-local-channel.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) of the local conda channel.
+export ANACONDA_LOCAL_CHANNEL_STRICT=disabled # Only required if you use prepare-airgap-install.sh. Specify enabled or disabled. If enabled, creation of conda environments will only use the local channel. It needs to be enabled if you are in an airgap environment.
+
+### ANACONDA AIRGAP INSTALL
+export ANACONDA_AIRGAP_INSTALL=disabled # Specify enabled or disabled. If enabled, script prepare-airgap-install.sh will create the airgap Anaconda instance with needed conda environments, and dlinsights service and Instance Groups will use the Anaconda instance in ANACONDA_AIRGAP_INSTALL_DIR, which will be created from ANACONDA_AIRGAP_INSTALL_ARCHIVE if necessary.
+export ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
+export ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
+export ANACONDA_AIRGAP_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
+export ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-dlinsights.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the dlinsights conda environment.
+export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-ig.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the conda environments for Instance Groups.
 
 ### EGO DEFAULT SETTINGS
 export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation.

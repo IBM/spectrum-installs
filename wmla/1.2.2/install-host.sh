@@ -12,7 +12,7 @@ export LOG_FILE=$LOG_DIR/install-host_`hostname -s`.log
 log "Starting host installation"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1
-[[ -d $BASE_INSTALL_DIR && ! -z "$(ls -A $BASE_INSTALL_DIR)" ]] && log "Base install dir $BASE_INSTALL_DIR already exists and is not empty, aborting" ERROR && exit 1
+[[ -d $INSTALL_DIR && ! -z "$(ls -A $INSTALL_DIR)" ]] && log "Install dir $INSTALL_DIR already exists and is not empty, aborting" ERROR && exit 1
 
 [[ ! -f $MANAGEMENTHOSTS_FILE ]] && log "File $MANAGEMENTHOSTS_FILE containing list of management hosts doesn't exist, aborting" ERROR && exit 1
 
@@ -60,22 +60,22 @@ else
 fi
 
 log "Creating directories"
-[[ ! -d $BASE_INSTALL_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN
-[[ ! -d $INSTALL_DIR ]] && prepareDir $INSTALL_DIR $CLUSTERADMIN
-[[ ! -d $RPMDB_DIR ]] && prepareDir $RPMDB_DIR $CLUSTERADMIN
-[[ ! -d $IG_DIR ]] && prepareDir $IG_DIR $CLUSTERADMIN
-[[ ! -d $ANACONDA_DIR ]] && prepareDir $ANACONDA_DIR $CLUSTERADMIN
-[[ ! -d $CACHE_DIR ]] && prepareDir $CACHE_DIR $CLUSTERADMIN
-[[ ! -d $BASE_SHARED_DIR ]] && prepareDir $BASE_SHARED_DIR $CLUSTERADMIN
-[[ ! -d $NOTEBOOKS_DIR ]] && prepareDir $NOTEBOOKS_DIR $CLUSTERADMIN
-[[ ! -d $SPARKHISTORY_DIR ]] && prepareDir $SPARKHISTORY_DIR $CLUSTERADMIN
-[[ ! -d $SPARKHA_DIR ]] && prepareDir $SPARKHA_DIR $CLUSTERADMIN
-[[ ! -d $SPARKSHUFFLE_DIR ]] && prepareDir $SPARKSHUFFLE_DIR $CLUSTERADMIN
+[[ ! -d $BASE_INSTALL_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN || changeOwnershipDir $BASE_INSTALL_DIR $CLUSTERADMIN
+[[ ! -d $INSTALL_DIR ]] && prepareDir $INSTALL_DIR $CLUSTERADMIN || changeOwnershipDir $INSTALL_DIR $CLUSTERADMIN
+[[ ! -d $RPMDB_DIR ]] && prepareDir $RPMDB_DIR $CLUSTERADMIN || changeOwnershipDir $RPMDB_DIR $CLUSTERADMIN
+[[ ! -d $IG_DIR ]] && prepareDir $IG_DIR $CLUSTERADMIN || changeOwnershipDir $IG_DIR $CLUSTERADMIN
+[[ ! -d $ANACONDA_DIR ]] && prepareDir $ANACONDA_DIR $CLUSTERADMIN || changeOwnershipDir $ANACONDA_DIR $CLUSTERADMIN
+[[ ! -d $CACHE_DIR ]] && prepareDir $CACHE_DIR $CLUSTERADMIN || changeOwnershipDir $CACHE_DIR $CLUSTERADMIN
+[[ ! -d $BASE_SHARED_DIR ]] && prepareDir $BASE_SHARED_DIR $CLUSTERADMIN || changeOwnershipDir $BASE_SHARED_DIR $CLUSTERADMIN
+[[ ! -d $NOTEBOOKS_DIR ]] && prepareDir $NOTEBOOKS_DIR $CLUSTERADMIN || changeOwnershipDir $NOTEBOOKS_DIR $CLUSTERADMIN
+[[ ! -d $SPARKHISTORY_DIR ]] && prepareDir $SPARKHISTORY_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKHISTORY_DIR $CLUSTERADMIN
+[[ ! -d $SPARKHA_DIR ]] && prepareDir $SPARKHA_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKHA_DIR $CLUSTERADMIN
+[[ ! -d $SPARKSHUFFLE_DIR ]] && prepareDir $SPARKSHUFFLE_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKSHUFFLE_DIR $CLUSTERADMIN
 
-[[ ! -d $DLI_SHARED_FS ]] && prepareDir $DLI_SHARED_FS $CLUSTERADMIN
+[[ ! -d $DLI_SHARED_FS ]] && prepareDir $DLI_SHARED_FS $CLUSTERADMIN || changeOwnershipDir $DLI_SHARED_FS $CLUSTERADMIN
 chmod -R 755 $DLI_SHARED_FS 2>&1 | tee -a $LOG_FILE
-[[ ! -d $DLI_DATA_FS ]] && prepareDir $DLI_DATA_FS $CLUSTERADMIN
-[[ ! -d $DLI_RESULT_FS ]] && prepareDir $DLI_RESULT_FS $CLUSTERADMIN
+[[ ! -d $DLI_DATA_FS ]] && prepareDir $DLI_DATA_FS $CLUSTERADMIN || changeOwnershipDir $DLI_DATA_FS $CLUSTERADMIN
+[[ ! -d $DLI_RESULT_FS ]] && prepareDir $DLI_RESULT_FS $CLUSTERADMIN || changeOwnershipDir $DLI_RESULT_FS $CLUSTERADMIN
 chmod 733 $DLI_RESULT_FS 2>&1 | tee -a $LOG_FILE
 chmod o+t $DLI_RESULT_FS 2>&1 | tee -a $LOG_FILE
 
@@ -205,14 +205,27 @@ then
 	log "Entitle Conductor"
 	TMP_ENTITLEMENT=/tmp/`basename $CONDUCTOR_ENTITLEMENT`
 	cp -f $CONDUCTOR_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	chown $CLUSTERADMIN:$CLUSTERADMIN $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
 	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
 	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to apply Conductor entitlement" ERROR
+		exit 1
+	fi
 	log "Entitle DLI"
 	TMP_ENTITLEMENT=/tmp/`basename $DLI_ENTITLEMENT`
 	cp -f $DLI_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	chown $CLUSTERADMIN:$CLUSTERADMIN $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
 	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
 	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to apply DLI entitlement" ERROR
+		exit 1
+	fi
 fi
 
 log "Define settings in ego.conf"
@@ -299,16 +312,22 @@ fi
 log "Create Anaconda instance for $DLI_CONDA_DLINSIGHTS_NAME using distribution $DLI_ANACONDA_DISTRIBUTION_ID"
 createAnacondaInstance "$DLI_ANACONDA_DISTRIBUTION_ID" "$DLI_ANACONDA_INSTANCE_NAME" "$DLI_ANACONDA_INSTANCE_DEPLOY_HOME" "$CLUSTERADMIN" "$RG_MGMT_NAME"
 
-log "Create $DLI_CONDA_DLINSIGHTS_NAME conda environment and wait for successful deployment"
-if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
+if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
 then
-	prepareLocalCondaChannel
-	log "Anaconda local channel enabled, modifying $DLI_CONDA_DLINSIGHTS_NAME conda env profile template $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE to use local channel"
-	modifyCondaEnvironmentProfileWithLocalChannel $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
+	log "Create $DLI_CONDA_DLINSIGHTS_NAME conda environment based on the airgap archive package and wait for successful deployment"
+	createCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE $DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$DLI_CONDA_DLINSIGHTS_NAME" $ANACONDA_INSTANCE_UUID
 else
-	CONDA_PROFILE_TEMPLATE=$DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE
+	log "Create $DLI_CONDA_DLINSIGHTS_NAME conda environment and wait for successful deployment"
+	if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
+	then
+		prepareLocalCondaChannel
+		log "Anaconda local channel enabled, modifying $DLI_CONDA_DLINSIGHTS_NAME conda env profile template $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE to use local channel"
+		modifyCondaEnvironmentProfileWithLocalChannel $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
+	else
+		CONDA_PROFILE_TEMPLATE=$DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE
+	fi
+	createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $DLI_CONDA_DLINSIGHTS_NAME
 fi
-createCondaEnvironmentAndWait $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $DLI_CONDA_DLINSIGHTS_NAME
 
 log "Restart cluster"
 restartCluster

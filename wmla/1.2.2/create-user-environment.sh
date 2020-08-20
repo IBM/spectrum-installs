@@ -40,19 +40,35 @@ fi
 log "Create Anaconda instance using distribution $IG_ANACONDA_DISTRIBUTION_ID"
 createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAME" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME" "$CLUSTERADMIN" "$RG_CPU_NAME"
 
+if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
+then
+	log "Create $IG_SPARK243_CONDA_ENV_NAME and $IG_DLI_CONDA_ENV_NAME conda environments based on the airgap archive package and wait for successful deployment"
+	createCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $ANACONDA_INSTANCE_UUID
+else
+  log "Create $IG_DLI_CONDA_ENV_NAME conda environment and wait for successful deployment"
+  if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
+  then
+  	prepareLocalCondaChannel
+  	log "Anaconda local channel enabled, modifying $IG_DLI_CONDA_ENV_NAME conda env profile template $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
+  	modifyCondaEnvironmentProfileWithLocalChannel $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
+  else
+  	CONDA_PROFILE_TEMPLATE=$IG_DLI_CONDA_ENV_PROFILE_TEMPLATE
+  fi
+  createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_DLI_CONDA_ENV_NAME
+  log "Create $IG_SPARK243_CONDA_ENV_NAME conda environment and wait for successful deployment"
+  if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
+  then
+  	prepareLocalCondaChannel
+  	log "Anaconda local channel enabled, modifying $IG_SPARK243_CONDA_ENV_NAME conda env profile template $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
+  	modifyCondaEnvironmentProfileWithLocalChannel $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
+  else
+  	CONDA_PROFILE_TEMPLATE=$IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE
+  fi
+  createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK243_CONDA_ENV_NAME
+fi
+
 log "Creating user $IG_USER_NAME"
 createUser $IG_USER_NAME $IG_USER_PASSWORD
-
-log "Create $IG_DLI_CONDA_ENV_NAME conda environment and wait for successful deployment"
-if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
-then
-	prepareLocalCondaChannel
-	log "Anaconda local channel enabled, modifying $IG_DLI_CONDA_ENV_NAME conda env profile template $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
-	modifyCondaEnvironmentProfileWithLocalChannel $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
-else
-	CONDA_PROFILE_TEMPLATE=$IG_DLI_CONDA_ENV_PROFILE_TEMPLATE
-fi
-createCondaEnvironmentAndWait $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_DLI_CONDA_ENV_NAME
 
 log "Creating consumers for instance group $IG_DLI_NAME"
 createIgConsumers /$IG_DLI_NAME $IG_DLI_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
@@ -81,17 +97,6 @@ fi
 log "Creating consumers for instance group $IG_SPARK243_NAME"
 createIgConsumers /$IG_SPARK243_NAME $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
 updateResourcePlanIgConsumers $IG_SPARK243_NAME
-
-log "Create $IG_SPARK243_CONDA_ENV_NAME conda environment and wait for successful deployment"
-if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
-then
-	prepareLocalCondaChannel
-	log "Anaconda local channel enabled, modifying $IG_SPARK243_CONDA_ENV_NAME conda env profile template $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
-	modifyCondaEnvironmentProfileWithLocalChannel $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
-else
-	CONDA_PROFILE_TEMPLATE=$IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE
-fi
-createCondaEnvironmentAndWait $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK243_CONDA_ENV_NAME
 
 log "Create Instance Group $IG_SPARK243_NAME"
 if [ "$INSTALL_TYPE" == "local" ]

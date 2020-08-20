@@ -16,8 +16,8 @@ createIgConsumers() {
 
 updateResourcePlanIgConsumers() {
 	local CONSUMER_BASE_NAME=$1
-	local RESPLAN_SOURCE=/tmp/resource-plan-source-`date | md5sum | head -c8`.xml
-	local RESPLAN_UPDATED=/tmp/resource-plan-updated-`date | md5sum | head -c8`.xml
+	local RESPLAN_SOURCE=/tmp/resource-plan-source-`date +%s%N | md5sum | head -c8`.xml
+	local RESPLAN_UPDATED=/tmp/resource-plan-updated-`date +%s%N | md5sum | head -c8`.xml
 	authenticate
 	log "Updating resource plan for Instance Group in consumer $CONSUMER_BASE_NAME"
 	egosh consumer exportresplan $RESPLAN_SOURCE 2>&1 | tee -a $LOG_FILE
@@ -80,7 +80,7 @@ createIgDli() {
         then
                 local SPARKSHUFFLE_BASE_DIR=${15}
         fi
-        local TMP_IG_PROFILE=/tmp/ig-profile-`date | md5sum | head -c8`.json
+        local TMP_IG_PROFILE=/tmp/ig-profile-`date +%s%N | md5sum | head -c8`.json
         local CONSUMER_BASE=${CONSUMER_BASE//\//\\\/}
         local DEPLOYMENT_BASEDIR_TMP=${DEPLOYMENT_BASEDIR//\//\\\/}
         local SPARKHA_BASEDIR_TMP=${SPARKHA_BASEDIR//\//\\\/}
@@ -146,7 +146,7 @@ createIgDliEdt() {
         then
                 local SPARKSHUFFLE_BASE_DIR=${14}
         fi
-        local TMP_IG_PROFILE=/tmp/ig-profile-`date | md5sum | head -c8`.json
+        local TMP_IG_PROFILE=/tmp/ig-profile-`date +%s%N | md5sum | head -c8`.json
         local CONSUMER_BASE=${CONSUMER_BASE//\//\\\/}
         local DEPLOYMENT_BASEDIR_TMP=${DEPLOYMENT_BASEDIR//\//\\\/}
         local SPARKHA_BASEDIR_TMP=${SPARKHA_BASEDIR//\//\\\/}
@@ -210,7 +210,7 @@ createIgSparkJupyter() {
 	then
 		local SPARKSHUFFLE_BASE_DIR=${14}
 	fi
-	local TMP_IG_PROFILE=/tmp/ig-profile-`date | md5sum | head -c8`.json
+	local TMP_IG_PROFILE=/tmp/ig-profile-`date +%s%N | md5sum | head -c8`.json
 	local CONSUMER_BASE=${CONSUMER_BASE//\//\\\/}
 	local DEPLOYMENT_BASEDIR_TMP=${DEPLOYMENT_BASEDIR//\//\\\/}
 	local SPARKHA_BASEDIR_TMP=${SPARKHA_BASEDIR//\//\\\/}
@@ -258,7 +258,7 @@ createIgSparkJupyter() {
 
 createIg() {
 	local IG_PROFILE_TEMPLATE=$1
-	local TMP_IG_PROFILE=/tmp/ig-profile-`date | md5sum | head -c8`.json
+	local TMP_IG_PROFILE=/tmp/ig-profile-`date +%s%N | md5sum | head -c8`.json
 	getRestUrls
 	findIgPorts
 	log "Preparing IG profile $TMP_IG_PROFILE using template $IG_PROFILE_TEMPLATE"
