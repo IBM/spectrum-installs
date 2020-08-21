@@ -151,6 +151,10 @@ Copy the files prepared by *prepare-local-conda-channel.sh* in the scripts folde
 
 ### 4.4. Additional steps for airgap environment
 
+Installation in airgap environment is only supported if Anaconda instances are deployed on a shared filesystem if there are more than 1 host in the cluster. Therefore ensure that *conf/parameters.inc* is configured with one of these 2 options:  
+* *INSTALL_TYPE* = **shared**
+* *INSTALL_TYPE* = **local** and *DEPLOYMENT_TYPE* = **shared**
+
 The installation of WMLA requires in most case files and packages which need to be downloaded from Internet or internal repositories:
 * OS packages.  
 * Anaconda distribution, to use instead of the one provided out-of-the-box by WMLA.  
@@ -171,6 +175,8 @@ Edit following parameters in *conf/parameters.inc* in order to enable airgap ins
 * *ANACONDA_AIRGAP_INSTALL*: Enable airgap installation.
 * *ANACONDA_AIRGAP_DISTRIBUTION_NAME*: Anaconda distribution to use to create the conda environments.
 * *ANACONDA_DISTRIBUTION_NAME_TO_ADD*: New Anaconda distribution to download, which will be added to WMLA.
+
+Also the value of *ANACONDA_DIR* needs to be the same as what it will be on the target cluster, because there are some absolute path in the conda environment files.  
 
 #### 4.4.3. Download and prepare required files
 In order to download Anaconda distribution and create the conda environments, execute the following script on a server with Internet access, which has the same architecture (x86_64 or ppc64le) than the target environment, and where the user defined in *CLUSTERADMIN* of *conf/parameters.inc* exists:
