@@ -51,7 +51,7 @@ createLocalCondaChannel() {
 			log "Profile $ANACONDA_ENV_PROFILE doesn't exist, aborting" ERROR
 			exit 1
 		fi
-		convertCondaTemplateToProfile $ANACONDA_ENV_PROFILE $ANACONDA_ENV_ID TMP_CONDA_ENV_PROFILE
+		convertCondaTemplateToProfile $ANACONDA_ENV_PROFILE env${ANACONDA_ENV_ID} TMP_CONDA_ENV_PROFILE
 		local ATTEMPT_NB=1
 		while [ $ATTEMPT_NB -le $ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT ]
 		do
