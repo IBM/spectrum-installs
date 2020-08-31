@@ -74,10 +74,6 @@ Edit parameters in *conf/parameters.inc*. Mandatory parameters (at the top of th
 * BASE_INSTALL_DIR
 * BASE_SHARED_DIR
 * EGO_SHARED_DIR
-* IG_DIR
-* ANACONDA_DIR
-* INSTALL_DIR
-* RPMDB_DIR  
 
 #### 4.1.3. Edit hosts list files
 Add the list of servers to install (FQDN as returned by "hostname -f" command), 1 host per line, in the following 2 files:

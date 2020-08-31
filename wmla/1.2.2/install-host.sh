@@ -89,7 +89,7 @@ then
 		log "Conductor package successfully installed" SUCCESS
 	else
 		log "Error during installation of Conductor package (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
+		exit 1
 	fi
 else
 	log "Installing from RPMs"
@@ -97,66 +97,12 @@ else
 	log "Extracting RPMs to $INSTALL_FROM_RPMS_TMP_DIR"
 	export IBM_SPECTRUM_CONDUCTOR_LICENSE_ACCEPT=Y
 	$CONDUCTOR_BIN --extract $INSTALL_FROM_RPMS_TMP_DIR --quiet 2>&1 | tee -a $LOG_FILE
-	log "Installing EGO RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "EGO RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of EGO RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing OpenJdkJre RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "OpenJdkJre RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of OpenJdkJre RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing ASCD RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ascd*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "ASCD RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of ASCD RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing Conductor RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/conductor*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "ConductorSpark RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of ConductorSpark RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing NodeJs RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "NodeJs RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of NodeJs RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing Explorer RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "Explorer RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of Explorer RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm" EGO
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm" OpenJdkJre
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ascd*.rpm" ASCD
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/conductor*.rpm" Conductor
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm" NodeJs
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm" Explorer
 fi
 
 log "Install DLI"
@@ -169,22 +115,18 @@ then
 		log "DLI package successfully installed" SUCCESS
 	else
 		log "Error during installation of DLI package (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 3
+		exit 1
 	fi
 else
 	log "Installing from RPMs"
 	[[ ! -d $INSTALL_FROM_RPMS_TMP_DIR ]] && prepareDir $INSTALL_FROM_RPMS_TMP_DIR $CLUSTERADMIN
 	log "Extracting RPMs to $INSTALL_FROM_RPMS_TMP_DIR"
 	$DLI_BIN --extract $INSTALL_FROM_RPMS_TMP_DIR --quiet 2>&1 | tee -a $LOG_FILE
-	log "Installing DLI RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/dli*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
+	if [ "$HOST_TYPE" == "COMPUTE" ]
 	then
-		log "DLI RPMs successfully installed" SUCCESS
+		installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/dlicore*.rpm" DLI
 	else
-		log "Error during installation of DLI RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 3
+		installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/dli*.rpm" DLI
 	fi
 fi
 
@@ -202,30 +144,8 @@ fi
 
 if [ "$HOST_TYPE" == "MASTER" ]
 then
-	log "Entitle Conductor"
-	TMP_ENTITLEMENT=/tmp/`basename $CONDUCTOR_ENTITLEMENT`
-	cp -f $CONDUCTOR_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	chown $CLUSTERADMIN:$CLUSTERADMIN $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
-	CODE=${PIPESTATUS[0]}
-	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	if [ $CODE -ne 0 ]
-	then
-		log "Failed to apply Conductor entitlement" ERROR
-		exit 1
-	fi
-	log "Entitle DLI"
-	TMP_ENTITLEMENT=/tmp/`basename $DLI_ENTITLEMENT`
-	cp -f $DLI_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	chown $CLUSTERADMIN:$CLUSTERADMIN $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
-	CODE=${PIPESTATUS[0]}
-	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	if [ $CODE -ne 0 ]
-	then
-		log "Failed to apply DLI entitlement" ERROR
-		exit 1
-	fi
+	applyEntitlement $CONDUCTOR_ENTITLEMENT Conductor
+	applyEntitlement $DLI_ENTITLEMENT DLI
 fi
 
 log "Define settings in ego.conf"
@@ -315,7 +235,8 @@ createAnacondaInstance "$DLI_ANACONDA_DISTRIBUTION_ID" "$DLI_ANACONDA_INSTANCE_N
 if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
 then
 	log "Create $DLI_CONDA_DLINSIGHTS_NAME conda environment based on the airgap archive package and wait for successful deployment"
-	createCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE $DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$DLI_CONDA_DLINSIGHTS_NAME" $ANACONDA_INSTANCE_UUID
+	extractCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE $DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$DLI_CONDA_DLINSIGHTS_NAME"
+	discoverCondaEnvironments $DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$DLI_CONDA_DLINSIGHTS_NAME" $ANACONDA_INSTANCE_UUID
 else
 	log "Create $DLI_CONDA_DLINSIGHTS_NAME conda environment and wait for successful deployment"
 	if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]

@@ -43,7 +43,8 @@ createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAM
 if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
 then
 	log "Create $IG_SPARK243_CONDA_ENV_NAME and $IG_DLI_CONDA_ENV_NAME conda environments based on the airgap archive package and wait for successful deployment"
-	createCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $ANACONDA_INSTANCE_UUID
+  extractCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME"
+	discoverCondaEnvironments $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $ANACONDA_INSTANCE_UUID
 else
   log "Create $IG_DLI_CONDA_ENV_NAME conda environment and wait for successful deployment"
   if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]

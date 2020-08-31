@@ -168,10 +168,13 @@ fi
 
 if [ "$CLUSTERINSTALL_CREATE_USER_ENVIRONMENT" == "enabled" ]
 then
-  log "Wait $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT seconds for hosts to to be up before creating user environment"
-  sleep $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT
+  if [ `wc -l $MANAGEMENTHOSTS_FILE | awk '{print $1}'` -gt 0 ] || [ `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]
+  then
+    log "Wait $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT seconds for hosts to to be up before creating user environment"
+    sleep $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT
+  fi
 
-  log "Creating Instance Groups"
+  log "Creating user environment"
   runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-user-environment.sh" "false"
 fi
 

@@ -236,11 +236,10 @@ createAirgapCondaInstall() {
 	rm -rf $ANACONDA_INSTALL_DIR 2>&1 | tee -a $LOG_FILE
 }
 
-createCondaEnvironmentsFromArchive() {
+extractCondaEnvironmentsFromArchive() {
 	local ANACONDA_INSTALL_ARCHIVE=$1
 	local ANACONDA_INSTALL_DIR=$2
 	local CONDA_ENV_NAMES=$3
-	local ANACONDA_INSTANCE_UUID=$4
 	if [ ! -f "$ANACONDA_INSTALL_ARCHIVE" ]
 	then
 		log "Anaconda instance archive $ANACONDA_INSTALL_ARCHIVE doesn't exist, aborting." ERROR
@@ -259,6 +258,7 @@ createCondaEnvironmentsFromArchive() {
 			exit 1
 		fi
 	done
+	log "Extracting archive $ANACONDA_INSTALL_ARCHIVE in $ANACONDA_INSTALL_DIR/envs"
 	tar xzf $ANACONDA_INSTALL_ARCHIVE -C $ANACONDA_INSTALL_DIR/envs 2>&1 | tee -a $LOG_FILE
 	CODE=${PIPESTATUS[0]}
 	if [ $CODE -ne 0 ]
@@ -268,16 +268,24 @@ createCondaEnvironmentsFromArchive() {
 	fi
 	log "Changing ownership of $ANACONDA_INSTALL_DIR/envs to $CLUSTERADMIN"
 	chown -R $CLUSTERADMIN:$CLUSTERADMIN $ANACONDA_INSTALL_DIR/envs 2>&1 | tee -a $LOG_FILE
+	log "Conda environments extracted succesfully" SUCCESS
+}
+
+discoverCondaEnvironments() {
+	local ANACONDA_INSTALL_DIR=$1
+	local CONDA_ENV_NAMES=$2
+	local ANACONDA_INSTANCE_UUID=$3
 	for CONDA_ENV_NAME in $CONDA_ENV_NAMES
 	do
 		local ATTEMPT_NB=1
 		while [ $ATTEMPT_NB -le $CONDA_ENV_CREATION_NB_ATTEMPT ]
 		do
-			log "Discovering conda environment $CONDA_ENV_NAME from extracted directory $ANACONDA_INSTALL_DIR/envs/$CONDA_ENV_NAME (attempt #$ATTEMPT_NB)"
+			log "Discovering conda environment $CONDA_ENV_NAME from directory $ANACONDA_INSTALL_DIR/envs/$CONDA_ENV_NAME (attempt #$ATTEMPT_NB)"
 			discoverCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
 			waitForCondaEnvironmentDeployed $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
 			if [ $CONDA_ENV_EXITSTATUS -eq 0 ]
 			then
+				log "Conda environment $CONDA_ENV_NAME discovered succesfully" SUCCESS
 				break
 			else
 				if [ $ATTEMPT_NB -eq $CONDA_ENV_CREATION_NB_ATTEMPT ]
