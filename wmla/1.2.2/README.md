@@ -256,6 +256,7 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __prepare-airgap-install.sh__: Script to download Anaconda distribution and create conda environments.
 * __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
 * __forceuninstall-cluster.sh__: Uninstall WMLA on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *BASE_SHARED_DIR* and *EGO_SHARED_DIR*).
+* __test-scripts.sh__: Script to test that these install scripts work properly. It should only be used by developers of these scripts.
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
