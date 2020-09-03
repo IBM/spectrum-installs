@@ -64,8 +64,8 @@ fi
 log "Creating directories"
 [[ ! -d $BASE_INSTALL_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN
 [[ ! -d $INSTALL_DIR ]] && prepareDir $INSTALL_DIR $CLUSTERADMIN
-[[ ! -d $RPMDB_DIR ]] && prepareDir $RPMDB_DIR $CLUSTERADMIN
-[[ ! -d $CACHE_DIR ]] && prepareDir $CACHE_DIR $CLUSTERADMIN
+[[ ! -d $RPMDB_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN
+[[ ! -d $CACHE_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN || changeOwnershipDir $CACHE_DIR $CLUSTERADMIN
 
 log "Install Symphony"
 if [ "$INSTALL_FROM_RPMS" == "disabled" ]
@@ -77,53 +77,17 @@ then
 		log "Symphony package successfully installed" SUCCESS
 	else
 		log "Error during installation of Symphony package (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
+		exit 1
 	fi
 else
 	log "Installing from RPMs"
 	[[ ! -d $INSTALL_FROM_RPMS_TMP_DIR ]] && prepareDir $INSTALL_FROM_RPMS_TMP_DIR $CLUSTERADMIN
 	log "Extracting RPMs to $INSTALL_FROM_RPMS_TMP_DIR"
 	$SYMPHONY_BIN --extract $INSTALL_FROM_RPMS_TMP_DIR --quiet 2>&1 | tee -a $LOG_FILE
-	log "Installing EGO RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "EGO RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of EGO RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing SOAM RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/soam*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "SOAM RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of SOAM RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing NodeJs RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "NodeJs RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of NodeJs RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing Explorer RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "Explorer RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of Explorer RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm" EGO
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/soam*.rpm" SOAM
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm" NodeJs
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm" Explorer
 fi
 
 if [ "$INSTALL_MULTI_HEAD" != "enabled" ]
@@ -140,11 +104,7 @@ fi
 
 if [ "$HOST_TYPE" == "MASTER" ]
 then
-	log "Entitle Symphony"
-	TMP_ENTITLEMENT=/tmp/`basename $SYMPHONY_ENTITLEMENT`
-	cp -f $SYMPHONY_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
-	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	applyEntitlement $SYMPHONY_ENTITLEMENT Symphony
 fi
 
 log "Define settings in ego.conf"

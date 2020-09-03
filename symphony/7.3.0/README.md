@@ -18,6 +18,7 @@
 
 ## 1. Description
 These scripts will install or uninstall IBM Spectrum Symphony 7.3.0 on a cluster of x86_64 or ppc64le servers, with RHEL Operating System, either local or shared install.  
+It can also create a demo environment: user id, sample applications using symping and enable the Value-at-Risk demo application.  
 Official documentation of IBM Spectrum Symphony is available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/sym_kc_welcome.html).
 
 ## 2. Components installed
@@ -62,8 +63,6 @@ Edit parameters in *conf/parameters.inc*. Mandatory parameters (at the top of th
 * MASTER_CANDIDATES
 * BASE_INSTALL_DIR
 * EGO_SHARED_DIR
-* INSTALL_DIR
-* RPMDB_DIR  
 
 #### 4.1.3. Edit hosts list files
 Add the list of servers to install (FQDN as returned by "hostname -f" command), 1 host per line, in the following 2 files:
@@ -105,7 +104,8 @@ Execute the following script, as root, on any server having password-less ssh ac
 2. Execute *install-host.sh* as root, on all servers if *INSTALL_TYPE=local* (starting with the master) or only on master if *INSTALL_TYPE=shared*.
 3. If *SSL=enabled* and self-signed certificates will be used, execute *update-ssl-host.sh* as root on all hosts starting with the master host.
 4. Execute *postinstall-host.sh* as root on all servers.
-5. If there are multiple management nodes, the master candidates list need to be configured either from Symphony GUI or with this CLI:
+5. To create demo environment, execute *create-demo-environment.sh* on master. It will create a user id, sample applications using symping and enable the Value-at-Risk demo application.
+6. If there are multiple management nodes, the master candidates list need to be configured either from Symphony GUI or with this CLI:
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f"
 ```
@@ -153,8 +153,10 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __install-cluster.sh__: Cluster installation script (Install all the components on all hosts and create Instance Groups).
 * __postinstall-host.sh__: Post-installation script (Define rc init script for Symphony and EGO sudoers on current host).
 * __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
+* __create-demo-environment.sh__: Script to create a demo environment (user id and sample applications).
 * __forceuninstall-host.sh__: Uninstall Symphony on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
 * __forceuninstall-cluster.sh__: Uninstall Symphony on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *EGO_SHARED_DIR*).
+* __test-scripts.sh__: Script to test that these install scripts work properly. It should only be used by developers of these scripts.
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
@@ -163,7 +165,10 @@ Execute the following script, as root, on any server having password-less ssh ac
     * __functions.inc__: Include all functions files.
     * __functions-common.inc__: Common functions for scripts.
     * __functions-cluster-management.inc__: Functions to manage cluster.
+    * __functions-soam-management.inc__: Functions to manage SOAM.
     * __functions-ssl.inc__: Functions to update self-signed certificates and keystores.
+* __templates/__:
+    * __app.xml__: Application profile template for the demo environment.
 
 ## 6. Comments for SSL Certificates
 * *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/help/admin/locating_pmc.html).

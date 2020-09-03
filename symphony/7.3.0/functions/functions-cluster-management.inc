@@ -100,15 +100,6 @@ waitForGuiUp() {
 	waitForClientURL GUIURL_1
 }
 
-installIfix() {
-	IFIX_FILE=$1
-	TMP_FIX=/tmp/`basename $IFIX_FILE`
-	cp -f $IFIX_FILE $TMP_FIX 2>&1 | tee -a $LOG_FILE
-	chmod o+r $TMP_FIX 2>&1 | tee -a $LOG_FILE
-	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoinstallfixes --silent $TMP_FIX" 2>&1 | tee -a $LOG_FILE
-	rm -f $TMP_FIX 2>&1 | tee -a $LOG_FILE
-}
-
 getRestUrl() {
 	if [ "$EGO_REST_BASE_URL" == "" ]
 	then
@@ -133,6 +124,47 @@ deleteResourceGroup() {
 	fi
 }
 
+createUser() {
+	local USERNAME=$1
+	local PASSWORD=$2
+	authenticate
+	egosh user list -ll | grep \"$USERNAME\" > /dev/null 2>&1
+	if [ $? -eq 0 ]
+	then
+		log "User $USERNAME already exists"
+	else
+		egosh user add -u $USERNAME -x $PASSWORD 2>&1 | tee -a $LOG_FILE
+		local CODE=$?
+		if [ $CODE -ne 0 ]
+		then
+			log "Cannot create user $USERNAME (error code: $CODE)" ERROR
+			exit 1
+		else
+			log "User $USERNAME created successfully" SUCCESS
+		fi
+	fi
+}
+
+createConsumer() {
+	local CONSUMER_PATH=$1
+	local EXECUTION_USER=$2
+	local RG_COMPUTE_NAME=$3
+	local RG_MANAGEMENT_NAME=$4
+	local ADMIN_USER=$5
+	authenticate
+	egosh consumer add $CONSUMER_PATH -e $EXECUTION_USER -a $ADMIN_USER -g "$RG_COMPUTE_NAME,$RG_MANAGEMENT_NAME" 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to create consumer $CONSUMER_PATH" WARNING
+	fi
+}
+
+createConsumerStdCfg() {
+	local CONSUMER_PATH=$1
+	createConsumer $CONSUMER_PATH $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $DEMO_USER
+}
+
 deleteConsumer() {
 	local CONSUMER_PATH=$1
 	getRestUrl
@@ -146,6 +178,18 @@ deleteConsumer() {
 		log "Failed to delete consumer $CONSUMER_PATH (HTTP CODE $HTTP_CODE), aborting. Output of deletion tentative:" ERROR
 		log "$RESPONSE" ERROR
 		exit 1
+	fi
+}
+
+assignConsumerAdminRole() {
+	local ADMIN_USER=$1
+	local CONSUMER_PATH=$2
+	authenticate
+	egosh user assignrole -u $ADMIN_USER -r CONSUMER_ADMIN -p $CONSUMER_PATH 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to assign Consumer Admin role to user $ADMIN_USER for consumer $CONSUMER_PATH" WARNING
 	fi
 }
 
@@ -165,14 +209,43 @@ deleteEgoService() {
 	fi
 }
 
-deleteApplication() {
-	local APP_NAME=$1
-	authenticate
-	soamunreg $APP_NAME -f 2>&1 | tee -a $LOG_FILE
-	local CODE=${PIPESTATUS[0]}
+installIfix() {
+	IFIX_FILE=$1
+	TMP_FIX=/tmp/`basename $IFIX_FILE`
+	cp -f $IFIX_FILE $TMP_FIX 2>&1 | tee -a $LOG_FILE
+	chmod o+r $TMP_FIX 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoinstallfixes --silent $TMP_FIX" 2>&1 | tee -a $LOG_FILE
+	rm -f $TMP_FIX 2>&1 | tee -a $LOG_FILE
+}
+
+installRPMs() {
+	local RPM_PATH=$1
+	local RPM_NAME=$2
+	log "Installing $RPM_NAME RPMs"
+	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $RPM_PATH 2>&1 | tee -a $LOG_FILE
+	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
+	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
+	then
+		log "$RPM_NAME RPMs successfully installed" SUCCESS
+	else
+		log "Error during installation of $RPM_NAME RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
+		exit 1
+	fi
+}
+
+applyEntitlement() {
+	local ENTITLEMENT_PATH=$1
+	local ENTITLEMENT_NAME=$2
+	log "Entitle $ENTITLEMENT_NAME"
+	TMP_ENTITLEMENT=/tmp/`basename $ENTITLEMENT_PATH`
+	cp -f $ENTITLEMENT_PATH $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	chmod o+r $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
 	if [ $CODE -ne 0 ]
 	then
-		log "Failed to delete application $APP_NAME (exit code: $CODE), aborting" ERROR
+		log "Failed to apply $ENTITLEMENT_NAME entitlement" ERROR
 		exit 1
 	fi
 }

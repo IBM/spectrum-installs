@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Profile xmlns="http://www.platform.com/Symphony/Profile/Application" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="7.3">
+
+    <Consumer applicationName="##APP_NAME##" consumerId="##CONSUMER_PATH##"
+              preStartApplication="false" numOfSlotsForPreloadedServices="1" resourceGroupName="##RG_COMPUTE_NAME##"
+              taskHighWaterMark="1.0" taskLowWaterMark="1.0"/>
+
+    <SOAM version="7.3">
+        <SSM resourceGroupName="##RG_MANAGEMENT_NAME##" resReq="" workDir="${SOAM_HOME}/work" startUpTimeout="60" shutDownTimeout="300">
+    	     <boundaryManagerConfig>
+                <boundaries>
+                    <boundary elementName="AvailableMemory">
+                        <event name="BEV_PROACTIVE" value="20"/>
+                        <event name="BEV_SEVERE" value="10"/>
+                        <event name="BEV_CRITICAL" value="0"/>
+                        <event name="BEV_HALT" value="0"/>
+                    </boundary>
+                    <boundary elementName="ProcessMemory">
+                        <param name="MaxSizeReference" value="8388608"/>
+                        <event name="BEV_PROACTIVE" value="0"/>
+                        <event name="BEV_SEVERE" value="0"/>
+                        <event name="BEV_CRITICAL" value="0"/>
+                        <event name="BEV_HALT" value="0"/>
+                    </boundary>
+                    <boundary elementName="AvailableVirtualAddressSpace">
+                        <param name="MaxSizeReference" value="8388608"/>
+                        <event name="BEV_PROACTIVE" value="50"/>
+                        <event name="BEV_SEVERE" value="40"/>
+                        <event name="BEV_CRITICAL" value="25"/>
+                        <event name="BEV_HALT" value="15"/>
+                    </boundary>
+                </boundaries>
+            </boundaryManagerConfig>
+        </SSM>
+        <SIM startUpTimeout="120" blockHostOnTimeout="true" blockHostOnVersionMismatch="true"/>
+        <DataHistory fileSwitchSize="100" lastingPeriod="96" path="${EGO_SHARED_TOP}/history"/>
+        <PagingTasksInput blockSize="4096" diskSpace="4294967296"/>
+        <PagingTasksOutput blockSize="4096" diskSpace="4294967296"/>
+        <PagingCommonData blockSize="102400" diskSpace="8589934592"/>
+        <PagingCommonDataUpdates diskSpace="8589934592" blockSize="102400"/>
+    </SOAM>
+
+    <SessionTypes>
+        <Type name="type1"
+              abortSessionIfTaskFail="false"
+              abortSessionIfClientDisconnect="true"
+              persistTaskHistory="error"
+              priority="1"
+              recoverable="false"
+              sessionRetryLimit="3"
+              taskCleanupPeriod="100"
+              suspendGracePeriod="100" taskRetryLimit="3"/>
+    </SessionTypes>
+
+    <Service name="sympingservice" description="The Symping Service">
+        <osTypes>
+            <osType name="all"
+                startCmd="${SOAM_HOME}/${VERSION_NUM}/${EGO_MACHINE_TYPE}/bin/sympingservice"
+                fileNamePattern="%sessionId%.%taskId%."
+                logDirectory="${SOAM_HOME}/work"
+                subDirectoryPattern="symping7.3/%sessionId%"
+                workDir="${SOAM_HOME}/work">
+            </osType>
+        </osTypes>
+        <Control>
+            <Method name="Register">
+                <Timeout duration="60" actionOnSI="blockHost"/>
+                <Exit actionOnSI="blockHost"/>
+            </Method>
+            <Method name="CreateService">
+                <Timeout duration="0" actionOnSI="blockHost"/>
+                <Exit actionOnSI="blockHost"/>
+                <Return controlCode="0" actionOnSI="keepAlive"/>
+                <Exception type="failure" controlCode="0" actionOnSI="blockHost"/>
+                <Exception type="fatal" controlCode="0" actionOnSI="blockHost"/>
+            </Method>
+            <Method name="SessionEnter">
+                <Timeout duration="0" actionOnSI="blockHost" actionOnWorkload="retry"/>
+                <Exit actionOnSI="blockHost" actionOnWorkload="retry"/>
+                <Return controlCode="0" actionOnSI="keepAlive" actionOnWorkload="succeed"/>
+                <Exception type="failure" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="retry"/>
+                <Exception type="fatal" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="fail"/>
+            </Method>
+            <Method name="SessionUpdate">
+                <Timeout duration="0" actionOnSI="blockHost" actionOnWorkload="retry"/>
+                <Exit actionOnSI="blockHost" actionOnWorkload="retry"/>
+                <Return controlCode="0" actionOnSI="keepAlive" actionOnWorkload="succeed"/>
+                <Exception type="failure" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="retry"/>
+                <Exception type="fatal" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="fail"/>
+            </Method>
+            <Method name="Invoke">
+                <Timeout duration="0" actionOnSI="restartService" actionOnWorkload="retry"/>
+                <Exit actionOnSI="restartService" actionOnWorkload="retry"/>
+                <Return controlCode="0" actionOnSI="keepAlive" actionOnWorkload="succeed"/>
+                <Exception type="failure" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="retry"/>
+                <Exception type="fatal" controlCode="0" actionOnSI="keepAlive" actionOnWorkload="fail"/>
+            </Method>
+            <Method name="SessionLeave">
+                <Timeout duration="0" actionOnSI="restartService"/>
+                <Exit actionOnSI="restartService"/>
+                <Return controlCode="0" actionOnSI="keepAlive"/>
+                <Exception type="failure" controlCode="0" actionOnSI="keepAlive"/>
+                <Exception type="fatal" controlCode="0" actionOnSI="keepAlive"/>
+            </Method>
+            <Method name="DestroyService">
+                <Timeout duration="15"/>
+            </Method>
+        </Control>
+    </Service>
+</Profile>

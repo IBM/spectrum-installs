@@ -27,6 +27,8 @@ then
   CODE=$?
   if [ $CODE -eq 0 ]
   then
+    log "Disabling all applications"
+    soamcontrol app disable all -f 2>&1 | tee -a $LOG_FILE
     log "Stop EGO services"
     egosh service stop all 2>&1 | tee -a $LOG_FILE
     log "Wait for EGO services to be stopped"

@@ -166,6 +166,12 @@ else
   fi
 fi
 
+if [ "$CLUSTERINSTALL_CREATE_DEMO_ENVIRONMENT" == "enabled" ]
+then
+  log "Creating demo environment"
+  runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-demo-environment.sh" "false"
+fi
+
 log "Get WEBGUI URL"
 runCommandLocalOrRemote $MASTERHOST $SCRIPT_GET_WEBGUI_URL "false"
 

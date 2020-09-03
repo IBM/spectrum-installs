@@ -12,6 +12,9 @@ export MASTER_CANDIDATES= # Specify all or a subset of management hosts which wi
 ### MULTI-HEAD INSTALL
 export INSTALL_MULTI_HEAD=disabled # Specify enabled or disabled. If enabled, the scripts will install Symphony on an existing Conductor or WMLA cluster. Directories INSTALL_DIR, RPMDB_DIR and EGO_SHARED_DIR (if specified) must be the same than those used during Conductor / WMLA installation. EGO_ADMIN_USERNAME and EGO_ADMIN_PASSWORD also need to be updated with current credentials of Admin user.
 
+### DEMO ENVIRONMENT
+export CLUSTERINSTALL_CREATE_DEMO_ENVIRONMENT=disabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create demo environment based on parameters below.
+
 ### HADOOP INTEGRATION
 export REMOVE_HADOOP_COMPONENTS=enabled # Specify enabled or disabled. If enabled, all EGO services, consumers and resource groups related to Hadoop MapReduce and YARN integration will be removed.
 
@@ -41,6 +44,13 @@ export SYMPHONY_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/symphony/sym_adv_ent
 ### IFIXES
 export IFIX546970_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.0_noarch_build546970.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546970.
 
+### DEMO ENVIRONMENT
+export DEMO_USER=demo # Username of the user which will have access (consumer admin role) to the applications created.
+export DEMO_PASSWORD=demo # Password of the user which will have access (consumer admin role) to the applications created.
+export DEMO_APP_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/app.xml # Application profile template to use to create applications.
+export DEMO_VAR_APP_NAME=Demo7.3 # Name of the Value at Risk demo application installed by Symphony
+export DEMO_VAR_CONSUMER_PATH=/SampleApplications/SOADemo # Consumer in which DEMO_VAR_APP_NAME is deployed
+
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES
 export CACHE_DIR=`dirname "$(readlink -f "$0")"`/cache # Base directory that these scripts will use to create temporary files.
@@ -64,6 +74,8 @@ export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM
 ### EGO DEFAULT SETTINGS
 export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation, or current Admin username if INSTALL_MULTI_HEAD=enabled.
 export EGO_ADMIN_PASSWORD=Admin # Default Admin password after EGO installation, or current Admin password if INSTALL_MULTI_HEAD=enabled.
+export RG_MANAGEMENT_NAME=ManagementHosts # Default Resource Group with management hosts after EGO installation.
+export RG_COMPUTE_NAME=ComputeHosts # Default Resource Group with compute hosts after EGO installation.
 
 ### SSL
 export SSL_TMP_DIR=$CACHE_DIR/ssl-files # Directory where SSL files will be written from the master host and need to be read by all other hosts. Need to be shared filesystem.
