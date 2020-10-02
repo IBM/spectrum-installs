@@ -8,6 +8,7 @@ export CLUSTERNAME=Symphony # Display name of the cluster.
 export SSL=enabled # Specify enabled or disabled. If enabled, all web interfaces and REST services will use SSL.
 export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as returned by "hostname -f".
 export MASTER_CANDIDATES= # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",") and complete list enclosed with double quote). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
+export BASE_PORT=7869 # Optional, specify base port for Symphony components. The cluster uses seven consecutive ports from the base port.
 
 ### MULTI-HEAD INSTALL
 export INSTALL_MULTI_HEAD=disabled # Specify enabled or disabled. If enabled, the scripts will install Symphony on an existing Conductor or WMLA cluster. Directories INSTALL_DIR, RPMDB_DIR and EGO_SHARED_DIR (if specified) must be the same than those used during Conductor / WMLA installation. EGO_ADMIN_USERNAME and EGO_ADMIN_PASSWORD also need to be updated with current credentials of Admin user.

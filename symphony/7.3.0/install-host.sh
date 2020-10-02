@@ -41,6 +41,10 @@ fi
 export IBM_SPECTRUM_SYMPHONY_LICENSE_ACCEPT=Y
 export SIMPLIFIEDWEM=N
 export DERBY_DB_HOST=$MASTERHOST
+if [ "$BASE_PORT" != "" ]
+then
+	export BASEPORT=$BASE_PORT
+fi
 
 if [ "$INSTALL_TYPE" == "shared" ]
 then
