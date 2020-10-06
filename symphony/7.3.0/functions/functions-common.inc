@@ -103,3 +103,11 @@ runCommandLocalOrRemote() {
 		fi
 	fi
 }
+
+applyUlimits() {
+	log "Apply ulimit of 65536 for open files and max user processes, for root and $CLUSTERADMIN"
+	ulimit -n 65536 2>&1 | tee -a $LOG_FILE
+	ulimit -u 65536 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
+}

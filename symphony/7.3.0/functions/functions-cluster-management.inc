@@ -53,6 +53,18 @@ waitForEgoServiceStarted() {
 	done
 }
 
+waitForEgoServiceStopped() {
+	local SERVICE_NAME=$1
+	authenticate
+	local SERVICE_STATE=`egosh service list -ll | grep \"$SERVICE_NAME\" | awk -F"," '{print $7}' | sed -e 's/\"//g'`
+	while [ "$SERVICE_STATE" != "DEFINED" ]
+	do
+		log "Service $SERVICE_NAME not stopped (state: $SERVICE_STATE) ..."
+		sleep $STATUS_CHECK_WAITTIME
+		local SERVICE_STATE=`egosh service list -ll | grep \"$SERVICE_NAME\" | awk -F"," '{print $7}' | sed -e 's/\"//g'`
+	done
+}
+
 waitForEgoServicesStopped() {
 	authenticate
 	local SERVICES_STATES=`egosh service list -ll | sed -e 1d | awk -F"," '{print $7}' | sed -e 's/\"//g'`
@@ -145,6 +157,20 @@ createUser() {
 	fi
 }
 
+createConsumerSingleRG() {
+	local CONSUMER_PATH=$1
+	local EXECUTION_USER=$2
+	local RG_NAME=$3
+	local ADMIN_USER=$4
+	authenticate
+	egosh consumer add $CONSUMER_PATH -e $EXECUTION_USER -a $ADMIN_USER -g $RG_NAME 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to create consumer $CONSUMER_PATH" WARNING
+	fi
+}
+
 createConsumer() {
 	local CONSUMER_PATH=$1
 	local EXECUTION_USER=$2
@@ -193,6 +219,17 @@ assignConsumerAdminRole() {
 	fi
 }
 
+createEgoService() {
+	local SERVICE_PROFILE=$1
+	authenticate
+	egosh service add -f $SERVICE_PROFILE 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to create EGO Service using profile $SERVICE_PROFILE" WARNING
+	fi
+}
+
 deleteEgoService() {
 	local EGO_SERVICE_NAME=$1
 	getRestUrl
@@ -207,6 +244,36 @@ deleteEgoService() {
 		log "$RESPONSE" ERROR
 		exit 1
 	fi
+}
+
+startEgoService() {
+	local EGO_SERVICE_NAME=$1
+	authenticate
+	egosh service start $EGO_SERVICE_NAME 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to start EGO Service $EGO_SERVICE_NAME" WARNING
+	fi
+}
+
+stopEgoService() {
+	local EGO_SERVICE_NAME=$1
+	authenticate
+	egosh service stop $EGO_SERVICE_NAME 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to stop EGO Service $EGO_SERVICE_NAME" WARNING
+	fi
+}
+
+restartEgoService() {
+	local EGO_SERVICE_NAME=$1
+	stopEgoService $EGO_SERVICE_NAME
+	waitForEgoServiceStopped $EGO_SERVICE_NAME
+	startEgoService $EGO_SERVICE_NAME
+	waitForEgoServiceStarted $EGO_SERVICE_NAME
 }
 
 installIfix() {

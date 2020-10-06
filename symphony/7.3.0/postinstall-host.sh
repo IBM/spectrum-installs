@@ -60,6 +60,7 @@ then
 fi
 
 log "Starting EGO"
+applyUlimits
 egosh ego start 2>&1 | tee -a $LOG_FILE
 
 log "Host post-installation finished!" SUCCESS

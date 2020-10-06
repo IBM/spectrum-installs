@@ -12,6 +12,7 @@ export BASE_PORT=7869 # Optional, specify base port for Symphony components. The
 
 ### MULTI-HEAD INSTALL
 export INSTALL_MULTI_HEAD=disabled # Specify enabled or disabled. If enabled, the scripts will install Symphony on an existing Conductor or WMLA cluster. Directories INSTALL_DIR, RPMDB_DIR and EGO_SHARED_DIR (if specified) must be the same than those used during Conductor / WMLA installation. EGO_ADMIN_USERNAME and EGO_ADMIN_PASSWORD also need to be updated with current credentials of Admin user.
+export POSTINSTALL_AUTOMATIC_CONFIG=enabled # Specify enabled or disabled. If enabled and INSTALL_MULTI_HEAD=enabled, the post-install config will be done automatically instead of the wizard on the GUI the first time the Admin log in. Hadoop components will not be configured, so this setting should be disabled if Haddop configuration needs to be done.
 
 ### DEMO ENVIRONMENT
 export CLUSTERINSTALL_CREATE_DEMO_ENVIRONMENT=disabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create demo environment based on parameters below.
@@ -77,6 +78,7 @@ export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation,
 export EGO_ADMIN_PASSWORD=Admin # Default Admin password after EGO installation, or current Admin password if INSTALL_MULTI_HEAD=enabled.
 export RG_MANAGEMENT_NAME=ManagementHosts # Default Resource Group with management hosts after EGO installation.
 export RG_COMPUTE_NAME=ComputeHosts # Default Resource Group with compute hosts after EGO installation.
+export RG_INTERNAL_NAME=InternalResourceGroup # Default Internal Resource Group after EGO installation.
 
 ### SSL
 export SSL_TMP_DIR=$CACHE_DIR/ssl-files # Directory where SSL files will be written from the master host and need to be read by all other hosts. Need to be shared filesystem.

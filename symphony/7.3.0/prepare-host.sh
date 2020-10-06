@@ -42,10 +42,6 @@ then
 	echo "$CLUSTERADMIN   hard    nofile    65536" >> $LIMITS_SPECTRUM_FILE
 fi
 
-log "Apply limits"
-ulimit -n 65536 2>&1 | tee -a $LOG_FILE
-ulimit -u 65536 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
+applyUlimits
 
 log "Prepare host script finished!" SUCCESS

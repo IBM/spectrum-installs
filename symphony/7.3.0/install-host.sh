@@ -156,10 +156,36 @@ then
 fi
 
 log "Start cluster"
+applyUlimits
 source $INSTALL_DIR/profile.platform
 egosh ego start 2>&1 | tee -a $LOG_FILE
 log "Wait for the cluster to start"
 waitForClusterUp
+
+if [ "$INSTALL_MULTI_HEAD" == "enabled" -a "$POSTINSTALL_AUTOMATIC_CONFIG" == "enabled" ]
+then
+	log "Wait for EGO service REST to be up"
+	waitForRestUp
+
+	log "Doing post-install configuration"
+	createConsumerSingleRG "/ManagementServices/SymphonyManagementServices" $CLUSTERADMIN $RG_MANAGEMENT_NAME "Guest"
+	createConsumerSingleRG "/ClusterServices/SymphonyClusterServices" $CLUSTERADMIN $RG_INTERNAL_NAME "Guest"
+	createConsumer "/SymTesting" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SymTesting/Symping73" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SymExec" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SymExec/SymExec73" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SampleApplications/SOASamples" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SampleApplications/SOADemo" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createEgoService "$INSTALL_DIR/gui/conf/post_install/sd.xml"
+	restartEgoService purger
+	restartEgoService plc
+	restartEgoService SYMREST
+
+	log "Removing post-install files from GUI config directory"
+	rm -f $INSTALL_DIR/gui/conf/post_install/*
+	restartEgoService WEBGUI
+fi
+
 
 if [ "$REMOVE_HADOOP_COMPONENTS" == "enabled" ]
 then
@@ -191,7 +217,10 @@ then
 		deleteResourceGroup "NameNodeRG"
 		deleteResourceGroup "SecondaryNodeRG"
 	else
-		log "Hadoop components cannot be removed, as they will only be configured when you follow the wizard when you log on to the GUI" WARNING
+		if [ "$POSTINSTALL_AUTOMATIC_CONFIG" != "enabled" ]
+		then
+			log "Hadoop components cannot be removed, as they will only be configured when you follow the wizard when you log on to the GUI" WARNING
+		fi
 	fi
 fi
 
