@@ -195,13 +195,8 @@ then
 	sed -i "s#<sc:MaxInstances>.*</sc:MaxInstances>#<sc:MaxInstances>1</sc:MaxInstances>#" $EGO_CONFDIR/../../eservice/esc/conf/services/sparkcleanup_service.xml 2>&1 | tee -a $LOG_FILE
 fi
 
-log "Apply limits"
-ulimit -n 65536 2>&1 | tee -a $LOG_FILE
-ulimit -u 65536 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
-
 log "Start cluster"
+applyUlimits
 source $INSTALL_DIR/profile.platform
 egosh ego start 2>&1 | tee -a $LOG_FILE
 log "Wait for the cluster to start"

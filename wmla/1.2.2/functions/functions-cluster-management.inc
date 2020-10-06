@@ -20,6 +20,7 @@ restartCluster() {
 	egosh service stop all >/dev/null
 	log "Wait for EGO services to be stopped"
 	waitForEgoServicesStopped
+	applyUlimits
 	log "Restart EGO"
 	egosh ego restart -f all 2>&1 | tee -a $LOG_FILE
 	log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"

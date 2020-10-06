@@ -59,13 +59,8 @@ then
   echo "source $INSTALL_DIR/profile.platform" >> $( getent passwd $CLUSTERADMIN | cut -d: -f6 )/.bashrc
 fi
 
-log "Apply limits"
-ulimit -n 65536 2>&1 | tee -a $LOG_FILE
-ulimit -u 65536 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
-su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
-
 log "Starting EGO"
+applyUlimits
 egosh ego start 2>&1 | tee -a $LOG_FILE
 
 log "Host post-installation finished!" SUCCESS
