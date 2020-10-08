@@ -15,7 +15,7 @@
 #    2    #       0       #      1     #    shared    #       N/A       # enabled  #   bin   #    disabled   # disabled #   yes    #  yes
 #    3    #       1       #      0     #    shared    #       N/A       # disabled #   rpm   #    enabled    # disabled #   no     #  no
 #    4    #       0       #      1     #    local     #      shared     # enabled  #   bin   #    disabled   # enabled  #   yes    #  yes
-#    5    #       0       #      1     #    local     #      local      # enabled  #   rpm   #    enabled    # disabled #   no     #  no
+#    5    #       0       #      1     #    local     #      local      # enabled  #   rpm   #    enabled    # disabled #   yes    #  no
 #
 # USAGE
 # 1. Pull the repo on shared FS accessible by hosts defined in PARAMETERS section
@@ -481,7 +481,7 @@ updateComputeHosts "$SERVER2_HOSTNAME"
 prepareAirgapArchives
 testInstall 4 "$SERVER1_HOSTNAME $SERVER2_HOSTNAME"
 log "Starting test 5"
-updateParametersGlobal $SERVER1_HOSTNAME $USER_ID local local $LOCAL_DIR $SHARED_DIR enabled enabled enabled disabled disabled 0
+updateParametersGlobal $SERVER1_HOSTNAME $USER_ID local local $LOCAL_DIR $SHARED_DIR enabled enabled enabled disabled enabled 0
 updateComputeHosts "$SERVER2_HOSTNAME"
 testInstall 5 "$SERVER1_HOSTNAME $SERVER2_HOSTNAME"
 log "End of test script"
