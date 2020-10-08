@@ -12,7 +12,7 @@ export LOG_FILE=$LOG_DIR/install-host_`hostname -s`.log
 log "Starting host installation"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1
-[[ -d $BASE_INSTALL_DIR && ! -z "$(ls -A $BASE_INSTALL_DIR)" ]] && log "Base install dir $BASE_INSTALL_DIR already exists and is not empty, aborting" ERROR && exit 1
+[[ -d $INSTALL_DIR && ! -z "$(ls -A $INSTALL_DIR)" ]] && log "Install dir $INSTALL_DIR already exists and is not empty, aborting" ERROR && exit 1
 
 [[ ! -f $MANAGEMENTHOSTS_FILE ]] && log "File $MANAGEMENTHOSTS_FILE containing list of management hosts doesn't exist, aborting" ERROR && exit 1
 
@@ -57,17 +57,17 @@ else
 fi
 
 log "Creating directories"
-[[ ! -d $BASE_INSTALL_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN
-[[ ! -d $INSTALL_DIR ]] && prepareDir $INSTALL_DIR $CLUSTERADMIN
-[[ ! -d $RPMDB_DIR ]] && prepareDir $RPMDB_DIR $CLUSTERADMIN
-[[ ! -d $IG_DIR ]] && prepareDir $IG_DIR $CLUSTERADMIN
-[[ ! -d $ANACONDA_DIR ]] && prepareDir $ANACONDA_DIR $CLUSTERADMIN
-[[ ! -d $CACHE_DIR ]] && prepareDir $CACHE_DIR $CLUSTERADMIN
-[[ ! -d $BASE_SHARED_DIR ]] && prepareDir $BASE_SHARED_DIR $CLUSTERADMIN
-[[ ! -d $NOTEBOOKS_DIR ]] && prepareDir $NOTEBOOKS_DIR $CLUSTERADMIN
-[[ ! -d $SPARKHISTORY_DIR ]] && prepareDir $SPARKHISTORY_DIR $CLUSTERADMIN
-[[ ! -d $SPARKHA_DIR ]] && prepareDir $SPARKHA_DIR $CLUSTERADMIN
-[[ ! -d $SPARKSHUFFLE_DIR ]] && prepareDir $SPARKSHUFFLE_DIR $CLUSTERADMIN
+[[ ! -d $BASE_INSTALL_DIR ]] && prepareDir $BASE_INSTALL_DIR $CLUSTERADMIN || changeOwnershipDir $BASE_INSTALL_DIR $CLUSTERADMIN
+[[ ! -d $INSTALL_DIR ]] && prepareDir $INSTALL_DIR $CLUSTERADMIN || changeOwnershipDir $INSTALL_DIR $CLUSTERADMIN
+[[ ! -d $RPMDB_DIR ]] && prepareDir $RPMDB_DIR $CLUSTERADMIN || changeOwnershipDir $RPMDB_DIR $CLUSTERADMIN
+[[ ! -d $IG_DIR ]] && prepareDir $IG_DIR $CLUSTERADMIN || changeOwnershipDir $IG_DIR $CLUSTERADMIN
+[[ ! -d $ANACONDA_DIR ]] && prepareDir $ANACONDA_DIR $CLUSTERADMIN || changeOwnershipDir $ANACONDA_DIR $CLUSTERADMIN
+[[ ! -d $CACHE_DIR ]] && prepareDir $CACHE_DIR $CLUSTERADMIN || changeOwnershipDir $CACHE_DIR $CLUSTERADMIN
+[[ ! -d $BASE_SHARED_DIR ]] && prepareDir $BASE_SHARED_DIR $CLUSTERADMIN || changeOwnershipDir $BASE_SHARED_DIR $CLUSTERADMIN
+[[ ! -d $NOTEBOOKS_DIR ]] && prepareDir $NOTEBOOKS_DIR $CLUSTERADMIN || changeOwnershipDir $NOTEBOOKS_DIR $CLUSTERADMIN
+[[ ! -d $SPARKHISTORY_DIR ]] && prepareDir $SPARKHISTORY_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKHISTORY_DIR $CLUSTERADMIN
+[[ ! -d $SPARKHA_DIR ]] && prepareDir $SPARKHA_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKHA_DIR $CLUSTERADMIN
+[[ ! -d $SPARKSHUFFLE_DIR ]] && prepareDir $SPARKSHUFFLE_DIR $CLUSTERADMIN || changeOwnershipDir $SPARKSHUFFLE_DIR $CLUSTERADMIN
 
 log "Install Conductor"
 if [ "$INSTALL_FROM_RPMS" == "disabled" ]
@@ -79,7 +79,7 @@ then
 		log "Conductor package successfully installed" SUCCESS
 	else
 		log "Error during installation of Conductor package (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
+		exit 1
 	fi
 else
 	log "Installing from RPMs"
@@ -87,66 +87,12 @@ else
 	log "Extracting RPMs to $INSTALL_FROM_RPMS_TMP_DIR"
 	export IBM_SPECTRUM_CONDUCTOR_LICENSE_ACCEPT=Y
 	$CONDUCTOR_BIN --extract $INSTALL_FROM_RPMS_TMP_DIR --quiet 2>&1 | tee -a $LOG_FILE
-	log "Installing EGO RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "EGO RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of EGO RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing OpenJdkJre RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "OpenJdkJre RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of OpenJdkJre RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing ASCD RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/ascd*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "ASCD RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of ASCD RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing Conductor RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/conductor*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "ConductorSpark RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of ConductorSpark RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing NodeJs RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "NodeJs RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of NodeJs RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
-	log "Installing Explorer RPMs"
-	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm 2>&1 | tee -a $LOG_FILE
-	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
-	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
-	then
-		log "Explorer RPMs successfully installed" SUCCESS
-	else
-		log "Error during installation of Explorer RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
-		exit 2
-	fi
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm" EGO
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm" OpenJdkJre
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ascd*.rpm" ASCD
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/conductor*.rpm" Conductor
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm" NodeJs
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm" Explorer
 fi
 
 log "Join cluster"
@@ -163,11 +109,7 @@ fi
 
 if [ "$HOST_TYPE" == "MASTER" ]
 then
-	log "Entitle Conductor"
-	TMP_ENTITLEMENT=/tmp/`basename $CONDUCTOR_ENTITLEMENT`
-	cp -f $CONDUCTOR_ENTITLEMENT $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
-	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
-	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	applyEntitlement $CONDUCTOR_ENTITLEMENT Conductor
 fi
 
 log "Define settings in ego.conf"
@@ -218,6 +160,7 @@ then
 fi
 
 log "Start cluster"
+applyUlimits
 source $INSTALL_DIR/profile.platform
 egosh ego start 2>&1 | tee -a $LOG_FILE
 log "Wait for the cluster to start"

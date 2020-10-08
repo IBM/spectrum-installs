@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #############################
-# WARNING: PLEASE READ README.md FIRST
+# WARNING: THIS SCRIPT WILL STOP CONDUCTOR CLUSTER AND REMOVE ALL DIRECTORIES! USE WITH CAUTION!
 #############################
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
@@ -19,6 +19,7 @@ log "Starting force uninstall cluster script"
 [[ ! -d $SCRIPTS_TMP_DIR ]] && prepareDir $SCRIPTS_TMP_DIR $CLUSTERADMIN
 
 SCRIPT_DELETE_DIRECTORIES=$SCRIPTS_TMP_DIR/forceuninstall_delete_directories.sh
+
 echo "#!/bin/sh" > $SCRIPT_DELETE_DIRECTORIES
 chmod +x $SCRIPT_DELETE_DIRECTORIES 2>&1 | tee -a $LOG_FILE
 echo "source `dirname "$(readlink -f "$0")"`/conf/parameters.inc" >> $SCRIPT_DELETE_DIRECTORIES

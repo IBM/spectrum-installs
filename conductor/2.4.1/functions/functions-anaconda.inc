@@ -51,9 +51,7 @@ createLocalCondaChannel() {
 			log "Profile $ANACONDA_ENV_PROFILE doesn't exist, aborting" ERROR
 			exit 1
 		fi
-		TMP_CONDA_ENV_PROFILE=/tmp/condaEnv-profile-env${ANACONDA_ENV_ID}-`date | md5sum | head -c8`.yaml
-		cp $ANACONDA_ENV_PROFILE $TMP_CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
-		sed -i 's/##CONDA_ENV_NAME##/env'$ANACONDA_ENV_ID'/g' $TMP_CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+		convertCondaTemplateToProfile $ANACONDA_ENV_PROFILE env${ANACONDA_ENV_ID} TMP_CONDA_ENV_PROFILE
 		local ATTEMPT_NB=1
 		while [ $ATTEMPT_NB -le $ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT ]
 		do
@@ -113,14 +111,14 @@ createLocalCondaChannel() {
 		log "Failed to create the index of the local conda channel (exit code: $CODE), aborting" ERROR
 		exit 1
 	fi
-	log "Changing ownership of $ANACONDA_LOCAL_CHANNEL_DIR to $CLUSTERADMIN"
-	chown -R $CLUSTERADMIN:$CLUSTERADMIN $ANACONDA_LOCAL_CHANNEL_DIR 2>&1 | tee -a $LOG_FILE
 	log "Creating the archive $ANACONDA_LOCAL_CHANNEL_ARCHIVE with the local conda channel $ANACONDA_LOCAL_CHANNEL_DIR"
 	tar czf $ANACONDA_LOCAL_CHANNEL_ARCHIVE -C $ANACONDA_LOCAL_CHANNEL_DIR . 2>&1 | tee -a $LOG_FILE
 	CODE=${PIPESTATUS[0]}
 	if [ $CODE -ne 0 ]
 	then
 		log "Failed to create the archive containing the local conda channel (exit code: $CODE), aborting" WARNING
+	else
+		log "Archive containing the local conda channel created successfully" SUCCESS
 	fi
 	log "Deleting Anaconda installation directory"
 	rm -rf $ANACONDA_INSTALL_DIR 2>&1 | tee -a $LOG_FILE
@@ -157,13 +155,165 @@ modifyCondaEnvironmentProfileWithLocalChannel() {
 		log "Conda environment profile template $CONDA_ENV_PROFILE_TEMPLATE_SOURCE doesn't exist, aborting." ERROR
 		exit 1
 	fi
-	CONDA_ENV_PROFILE_TEMPLATE_UPDATED=/tmp/condaEnv-profile-localChannel-`date | md5sum | head -c8`.yaml
+	CONDA_ENV_PROFILE_TEMPLATE_UPDATED=/tmp/condaEnv-profile-localChannel-`date +%s%N | md5sum | head -c8`.yaml
 	head -n 1 $CONDA_ENV_PROFILE_TEMPLATE_SOURCE > $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
 	echo "channels:" >> $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
 	echo "  - file://$ANACONDA_LOCAL_CHANNEL_DIR" >> $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
-	echo "  - nodefaults" >> $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
+	if [ "$ANACONDA_LOCAL_CHANNEL_STRICT" == "enabled" ]
+	then
+		echo "  - nodefaults" >> $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
+	fi
 	sed -n '/^dependencies\:/,$p' $CONDA_ENV_PROFILE_TEMPLATE_SOURCE >> $CONDA_ENV_PROFILE_TEMPLATE_UPDATED
 	eval $__resultvar="'$CONDA_ENV_PROFILE_TEMPLATE_UPDATED'"
+}
+
+createAirgapCondaInstall() {
+	local ANACONDA_INSTALL_DIR=$1
+	local ANACONDA_ENV_PROFILES_LIST=$2
+	local ANACONDA_INSTALL_ARCHIVE=$3
+	local ANACONDA_DISTRIBUTION_FILE=$CACHE_DIR/${ANACONDA_AIRGAP_DISTRIBUTION_NAME}.sh
+	local ANACONDA_ENV_ID=0
+	downloadAnacondaDistribution $ANACONDA_AIRGAP_DISTRIBUTION_NAME $ANACONDA_DISTRIBUTION_FILE
+	if [ -d "$ANACONDA_INSTALL_DIR" ]
+	then
+		log "Deleting previous install of Anaconda in $ANACONDA_INSTALL_DIR"
+		rm -rf $ANACONDA_INSTALL_DIR 2>&1 | tee -a $LOG_FILE
+	fi
+	log "Installing Anaconda from distribution $ANACONDA_AIRGAP_DISTRIBUTION_NAME in directory $ANACONDA_INSTALL_DIR"
+	bash $ANACONDA_DISTRIBUTION_FILE -b -p $ANACONDA_INSTALL_DIR 2>&1 | tee -a $LOG_FILE
+	if [ ${PIPESTATUS[0]} -ne 0 ]
+	then
+		log "Failed to install Anaconda from $ANACONDA_AIRGAP_DISTRIBUTION_NAME into $ANACONDA_INSTALL_DIR, aborting" ERROR
+		exit 1
+	fi
+	log "Activating Anaconda"
+	. $ANACONDA_INSTALL_DIR/etc/profile.d/conda.sh
+	export IBM_POWERAI_LICENSE_ACCEPT=yes
+	for ANACONDA_ENV_PROFILE in $ANACONDA_ENV_PROFILES_LIST
+	do
+		if [ ! -f $ANACONDA_ENV_PROFILE ]
+		then
+			log "Profile $ANACONDA_ENV_PROFILE doesn't exist, aborting" ERROR
+			exit 1
+		fi
+		parseCondaEnvProfile $ANACONDA_ENV_PROFILE
+		local ATTEMPT_NB=1
+		while [ $ATTEMPT_NB -le $ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT ]
+		do
+			log "Creating conda environment $CONDA_ENV_PROFILE_PARSED_NAME using profile $ANACONDA_ENV_PROFILE (attempt #$ATTEMPT_NB)"
+			$ANACONDA_INSTALL_DIR/bin/conda env create -f $ANACONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+			CODE=${PIPESTATUS[0]}
+			if [ $CODE -eq 0 ]
+			then
+				log "Conda environment $CONDA_ENV_PROFILE_PARSED_NAME created successfully" SUCCESS
+				break
+			else
+				if [ $ATTEMPT_NB -eq $ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT ]
+				then
+					log "Failed to create conda environment $CONDA_ENV_PROFILE_PARSED_NAME from profile $ANACONDA_ENV_PROFILE (exit code: $CODE), aborting" ERROR
+					exit 1
+				else
+					log "Failed to create conda environment $CONDA_ENV_PROFILE_PARSED_NAME from profile $ANACONDA_ENV_PROFILE (exit code: $CODE)" WARNING
+					log "Deleting conda environment $CONDA_ENV_PROFILE_PARSED_NAME"
+					$ANACONDA_INSTALL_DIR/bin/conda env remove -n $CONDA_ENV_PROFILE_PARSED_NAME 2>&1 | tee -a $LOG_FILE
+					log "Waiting $ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME seconds before trying again"
+					sleep $ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME
+				fi
+			fi
+			ATTEMPT_NB=$((ATTEMPT_NB+1))
+		done
+	done
+	log "Creating the archive $ANACONDA_INSTALL_ARCHIVE with the conda environments directory $ANACONDA_INSTALL_DIR/envs"
+	tar czf $ANACONDA_INSTALL_ARCHIVE -C $ANACONDA_INSTALL_DIR/envs . 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to create the archive containing the conda environments directory (exit code: $CODE), aborting" WARNING
+	else
+		log "Archive containing the conda environments directory created successfully" SUCCESS
+	fi
+	log "Deleting Anaconda installation directory"
+	rm -rf $ANACONDA_INSTALL_DIR 2>&1 | tee -a $LOG_FILE
+}
+
+extractCondaEnvironmentsFromArchive() {
+	local ANACONDA_INSTALL_ARCHIVE=$1
+	local ANACONDA_INSTALL_DIR=$2
+	local CONDA_ENV_NAMES=$3
+	if [ ! -f "$ANACONDA_INSTALL_ARCHIVE" ]
+	then
+		log "Anaconda instance archive $ANACONDA_INSTALL_ARCHIVE doesn't exist, aborting." ERROR
+		exit 1
+	fi
+	if [ ! -d "$ANACONDA_INSTALL_DIR" ]
+	then
+		log "Anaconda instance directory $ANACONDA_INSTALL_DIR doesn't exist, aborting." ERROR
+		exit 1
+	fi
+	for CONDA_ENV_NAME in $CONDA_ENV_NAMES
+	do
+		if [ -d "$ANACONDA_INSTALL_DIR/envs/$CONDA_ENV_NAME" ]
+		then
+			log "Directory for conda environment $CONDA_ENV_NAME already exist, aborting." ERROR
+			exit 1
+		fi
+	done
+	log "Extracting archive $ANACONDA_INSTALL_ARCHIVE in $ANACONDA_INSTALL_DIR/envs"
+	tar xzf $ANACONDA_INSTALL_ARCHIVE -C $ANACONDA_INSTALL_DIR/envs 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to extract conda environments from archive $ANACONDA_INSTALL_ARCHIVE in directory $ANACONDA_INSTALL_DIR/envs (exit code: $CODE), aborting" ERROR
+		exit 1
+	fi
+	log "Changing ownership of $ANACONDA_INSTALL_DIR/envs to $CLUSTERADMIN"
+	chown -R $CLUSTERADMIN:$CLUSTERADMIN $ANACONDA_INSTALL_DIR/envs 2>&1 | tee -a $LOG_FILE
+	log "Conda environments extracted succesfully" SUCCESS
+}
+
+discoverCondaEnvironments() {
+	local ANACONDA_INSTALL_DIR=$1
+	local CONDA_ENV_NAMES=$2
+	local ANACONDA_INSTANCE_UUID=$3
+	for CONDA_ENV_NAME in $CONDA_ENV_NAMES
+	do
+		local ATTEMPT_NB=1
+		while [ $ATTEMPT_NB -le $CONDA_ENV_CREATION_NB_ATTEMPT ]
+		do
+			log "Discovering conda environment $CONDA_ENV_NAME from directory $ANACONDA_INSTALL_DIR/envs/$CONDA_ENV_NAME (attempt #$ATTEMPT_NB)"
+			discoverCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+			waitForCondaEnvironmentDeployed $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+			if [ $CONDA_ENV_EXITSTATUS -eq 0 ]
+			then
+				log "Conda environment $CONDA_ENV_NAME discovered succesfully" SUCCESS
+				break
+			else
+				if [ $ATTEMPT_NB -eq $CONDA_ENV_CREATION_NB_ATTEMPT ]
+				then
+					log "Conda environment $CONDA_ENV_NAME discovery failed $ATTEMPT_NB times (last exit status: $CONDA_ENV_EXITSTATUS), aborting." ERROR
+					exit 1
+				fi
+			fi
+			ATTEMPT_NB=$((ATTEMPT_NB+1))
+		done
+	done
+}
+
+discoverCondaEnvironment() {
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_NAME=$2
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X PUT -H 'Content-Type:application/json' -H 'Accept:application/json' --data @$CONDA_ENV_PACKAGES_LIST_FILE ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments/$CONDA_ENV_NAME/refresh`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "204" ]
+	then
+		log "Discovery of conda environment $CONDA_ENV_NAME started successfully" SUCCESS
+	else
+		log "Failed to start discovery of conda environment $CONDA_ENV_NAME (HTTP CODE $HTTP_CODE), aborting. Output of discovery tentative:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
 }
 
 getAnacondaDistributions() {
@@ -300,7 +450,19 @@ createAnacondaInstance() {
 	log "Anaconda instance deployed successfully" SUCCESS
 }
 
-createCondaEnvironmentAndWait() {
+createCondaEnvironment() {
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_PROFILE_TEMPLATE=$2
+	local CONDA_ENV_NAME=$3
+	if [ "$ANACONDA_LOCAL_CONDA_ENV_CREATION_TYPE" == "twosteps" ]
+	then
+		createCondaEnvironmentInTwoStepsAndWait $ANACONDA_INSTANCE_UUID $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME
+	else
+		createCondaEnvironmentFromProfileAndWait $ANACONDA_INSTANCE_UUID $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME
+	fi
+}
+
+createCondaEnvironmentFromProfileAndWait() {
 	local ANACONDA_INSTANCE_UUID=$1
 	local CONDA_ENV_PROFILE_TEMPLATE=$2
 	local CONDA_ENV_NAME=$3
@@ -308,7 +470,7 @@ createCondaEnvironmentAndWait() {
 	while [ $ATTEMPT_NB -le $CONDA_ENV_CREATION_NB_ATTEMPT ]
 	do
 		log "Creating conda environment $CONDA_ENV_NAME from profile template $CONDA_ENV_PROFILE_TEMPLATE (attempt #$ATTEMPT_NB)"
-		createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME
+		createCondaEnvironmentFromProfile $ANACONDA_INSTANCE_UUID $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME
 		waitForCondaEnvironmentDeployed $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
 		if [ $CONDA_ENV_EXITSTATUS -eq 0 ]
 		then
@@ -329,14 +491,56 @@ createCondaEnvironmentAndWait() {
 	done
 }
 
-createCondaEnvironment() {
+createCondaEnvironmentInTwoStepsAndWait() {
 	local ANACONDA_INSTANCE_UUID=$1
 	local CONDA_ENV_PROFILE_TEMPLATE=$2
 	local CONDA_ENV_NAME=$3
-	local TMP_CONDA_ENV_PROFILE=/tmp/condaEnv-profile-`date | md5sum | head -c8`.yaml
+	local ATTEMPT_NB=1
+	while [ $ATTEMPT_NB -le $CONDA_ENV_CREATION_NB_ATTEMPT ]
+	do
+		log "Creating empty conda environment $CONDA_ENV_NAME (attempt #$ATTEMPT_NB)"
+		createEmptyCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+		waitForCondaEnvironmentDeployed $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+		if [ $CONDA_ENV_EXITSTATUS -ne 0 ]
+		then
+			if [ $ATTEMPT_NB -eq $CONDA_ENV_CREATION_NB_ATTEMPT ]
+			then
+				log "Conda environment $CONDA_ENV_NAME creation failed $ATTEMPT_NB times (last exit status: $CONDA_ENV_EXITSTATUS), aborting." ERROR
+				exit 1
+			else
+				log "Conda environment $CONDA_ENV_NAME creation failed (exit status: $CONDA_ENV_EXITSTATUS)" WARNING
+				ATTEMPT_NB=$((ATTEMPT_NB+1))
+				continue
+			fi
+		else
+			installPackagesInCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME $CONDA_ENV_PROFILE_TEMPLATE
+			waitForCondaEnvironmentDeployed $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+			if [ $CONDA_ENV_EXITSTATUS -eq 0 ]
+			then
+				break
+			else
+				if [ $ATTEMPT_NB -eq $CONDA_ENV_CREATION_NB_ATTEMPT ]
+				then
+					log "Conda environment $CONDA_ENV_NAME deployment failed $ATTEMPT_NB times (last exit status: $CONDA_ENV_EXITSTATUS), aborting." ERROR
+					exit 1
+				else
+					log "Deleting conda environment $CONDA_ENV_NAME"
+					removeCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+					log "Waiting $CONDA_ENV_CREATION_WAITTIME seconds before trying again"
+					sleep $CONDA_ENV_CREATION_WAITTIME
+				fi
+			fi
+		fi
+		ATTEMPT_NB=$((ATTEMPT_NB+1))
+	done
+}
+
+createCondaEnvironmentFromProfile() {
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_PROFILE_TEMPLATE=$2
+	local CONDA_ENV_NAME=$3
 	getRestUrls
-	cp $CONDA_ENV_PROFILE_TEMPLATE $TMP_CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
-	sed -i 's/##CONDA_ENV_NAME##/'$CONDA_ENV_NAME'/g' $TMP_CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+	convertCondaTemplateToProfile $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME TMP_CONDA_ENV_PROFILE
 	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X POST -H 'Content-Type:multipart/form-data' -H 'Accept:application/json' -F "file=@$TMP_CONDA_ENV_PROFILE" ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments`
 	local RESPONSE=${CURL_OUT:0:(-3)}
 	local HTTP_CODE=${CURL_OUT:(-3)}
@@ -349,6 +553,101 @@ createCondaEnvironment() {
 		exit 1
 	fi
 	rm -f $TMP_CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+}
+
+createEmptyCondaEnvironment() {
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_NAME=$2
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X POST -H 'Accept:application/json' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments?name=$CONDA_ENV_NAME`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "201" ]
+	then
+		log "Conda environment $CONDA_ENV_NAME created successfully" SUCCESS
+	else
+		log "Failed to create conda environment $CONDA_ENV_NAME (HTTP CODE $HTTP_CODE), aborting. Output of creation tentative:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+installPackagesInCondaEnvironment() {
+	local ANACONDA_INSTANCE_UUID=$1
+	local CONDA_ENV_NAME=$2
+	local CONDA_ENV_PROFILE_TEMPLATE=$3
+	createJsonPackagesToInstallInCondaEnv $CONDA_ENV_PROFILE_TEMPLATE CONDA_ENV_PACKAGES_LIST_FILE
+	getRestUrls
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X PUT -H 'Content-Type:application/json' -H 'Accept:application/json' --data @$CONDA_ENV_PACKAGES_LIST_FILE ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments/$CONDA_ENV_NAME/install`
+	local RESPONSE=${CURL_OUT:0:(-3)}
+	local HTTP_CODE=${CURL_OUT:(-3)}
+	if [ "$HTTP_CODE" == "204" ]
+	then
+		log "Installation of packages in conda environment $CONDA_ENV_NAME started successfully" SUCCESS
+		rm -f $CONDA_ENV_PACKAGES_LIST_FILE 2>&1 | tee -a $LOG_FILE
+	else
+		log "Failed to start installation of packages in conda environment $CONDA_ENV_NAME (HTTP CODE $HTTP_CODE), aborting. Output of installation tentative:" ERROR
+		log "$RESPONSE" ERROR
+		exit 1
+	fi
+}
+
+createJsonPackagesToInstallInCondaEnv() {
+	local CONDA_ENV_PROFILE_TEMPLATE=$1
+	local __resultvar=$2
+	local CONDA_INSTALL_PACKAGES=""
+	CONDA_ENV_PACKAGES_LIST_FILE=/tmp/conda-install-packages-localChannel-`date +%s%N | md5sum | head -c8`.json
+	parseCondaEnvProfile $CONDA_ENV_PROFILE_TEMPLATE
+	for CONDA_ENV_PROFILE_PARSED_PACKAGE in $CONDA_ENV_PROFILE_PARSED_PACKAGES
+	do
+		CONDA_INSTALL_PACKAGES=''$CONDA_INSTALL_PACKAGES' "'$CONDA_ENV_PROFILE_PARSED_PACKAGE'",'
+	done
+	CONDA_INSTALL_PACKAGES=${CONDA_INSTALL_PACKAGES::-1}
+	echo '{ "channel": "file://'$ANACONDA_LOCAL_CHANNEL_DIR'", "packages": ['$CONDA_INSTALL_PACKAGES' ] }' > $CONDA_ENV_PACKAGES_LIST_FILE
+	eval $__resultvar="'$CONDA_ENV_PACKAGES_LIST_FILE'"
+}
+
+parseCondaEnvProfile() {
+	local CONDA_ENV_PROFILE_TEMPLATE=$1
+	local CONDA_ENV_PROFILE_SECTION="none"
+	export CONDA_ENV_PROFILE_PARSED_NAME=""
+	export CONDA_ENV_PROFILE_PARSED_CHANNELS=""
+	export CONDA_ENV_PROFILE_PARSED_PACKAGES=""
+	while IFS= read -r line
+	do
+		if [[ $line == name* ]]
+		then
+			trim ${line#name:} CONDA_ENV_PROFILE_PARSED_NAME
+		elif [[ $line == "channels:" ]]
+		then
+			CONDA_ENV_PROFILE_SECTION="channels"
+		elif [[ "$line" == "dependencies:" ]]
+		then
+			CONDA_ENV_PROFILE_SECTION="dependencies"
+		elif [[ "$CONDA_ENV_PROFILE_SECTION" == "channels" ]]
+		then
+			trim "$line" CONDA_ENV_PROFILE_PARSED_CHANNEL
+			trim "${CONDA_ENV_PROFILE_PARSED_CHANNEL#?}" CONDA_ENV_PROFILE_PARSED_CHANNEL
+			CONDA_ENV_PROFILE_PARSED_CHANNELS="$CONDA_ENV_PROFILE_PARSED_CHANNELS $CONDA_ENV_PROFILE_PARSED_CHANNEL"
+		elif [[ "$CONDA_ENV_PROFILE_SECTION" == "dependencies" ]]
+		then
+			trim "$line" CONDA_ENV_PROFILE_PARSED_PACKAGE
+			trim "${CONDA_ENV_PROFILE_PARSED_PACKAGE#?}" CONDA_ENV_PROFILE_PARSED_PACKAGE
+			CONDA_ENV_PROFILE_PARSED_PACKAGES="$CONDA_ENV_PROFILE_PARSED_PACKAGES $CONDA_ENV_PROFILE_PARSED_PACKAGE"
+		fi
+	done < "$CONDA_ENV_PROFILE_TEMPLATE"
+	trim "$CONDA_ENV_PROFILE_PARSED_CHANNELS" CONDA_ENV_PROFILE_PARSED_CHANNELS
+	trim "$CONDA_ENV_PROFILE_PARSED_PACKAGES" CONDA_ENV_PROFILE_PARSED_PACKAGES
+}
+
+convertCondaTemplateToProfile() {
+	local CONDA_ENV_PROFILE_TEMPLATE=$1
+	local CONDA_ENV_NAME=$2
+	local __resultvar=$3
+	CONDA_ENV_PROFILE=/tmp/condaEnv-profile-`date +%s%N | md5sum | head -c8`.yaml
+	cp $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+	sed -i 's/##CONDA_ENV_NAME##/'$CONDA_ENV_NAME'/g' $CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+	eval $__resultvar="'$CONDA_ENV_PROFILE'"
 }
 
 waitForCondaEnvironmentDeployed() {

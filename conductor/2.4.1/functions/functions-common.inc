@@ -54,6 +54,12 @@ prepareDir() {
 		log "Cannot create directory $DIR_PATH, aborting" ERROR
 		exit 1
 	fi
+	changeOwnershipDir $DIR_PATH $OWNER
+}
+
+changeOwnershipDir() {
+	local DIR_PATH=$1
+	local OWNER=$2
 	chown $OWNER:$OWNER $DIR_PATH 2>&1 | tee -a $LOG_FILE
 	if [ ${PIPESTATUS[0]} -ne 0 ]
 	then
@@ -109,4 +115,20 @@ runCommandLocalOrRemote() {
 			fi
 		fi
 	fi
+}
+
+trim() {
+	local var="$1"
+	local __resultvar=$2
+	var="${var#"${var%%[![:space:]]*}"}"
+	var="${var%"${var##*[![:space:]]}"}"
+	eval $__resultvar="'$var'"
+}
+
+applyUlimits() {
+	log "Apply ulimit of 65536 for open files and max user processes, for root and $CLUSTERADMIN"
+	ulimit -n 65536 2>&1 | tee -a $LOG_FILE
+	ulimit -u 65536 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
 }

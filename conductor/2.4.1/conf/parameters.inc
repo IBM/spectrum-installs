@@ -3,7 +3,7 @@
 ##### GLOBAL PARAMETERS
 ### CLUSTER INSTALL
 export INSTALL_TYPE=local # Specify shared or local. Type of installation for Conductor binaries.
-export DEPLOYMENT_TYPE=local # Only required if INSTALL_TYPE=local. Specify shared or local. Type of deployment for Instance Groups, Anaconda instances and Application Instances.
+export DEPLOYMENT_TYPE=shared # Only required if INSTALL_TYPE=local. Specify shared or local. Type of deployment for Instance Groups, Anaconda instances and Application Instances.
 export CLUSTERADMIN=egoadmin # OS user who will be cluster admin.
 export CLUSTERNAME=Conductor # Display name of the cluster.
 export SSL=enabled # Specify enabled or disabled. If enabled, all web interfaces and REST services will use SSL.
@@ -12,7 +12,7 @@ export MASTER_CANDIDATES= # Specify all or a subset of management hosts which wi
 
 ### ALL HOSTS INSTALL
 export CLUSTERINSTALL_CREATE_USER_ENVIRONMENT=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create user environment based on parameters below.
-export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will execute updateSSLcerts-host.sh on each host.
+export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will execute update-ssl-host.sh.
 
 ##### DIRECTORIES PARAMETERS
 ### BASE DIRECTORIES
@@ -20,16 +20,27 @@ export BASE_INSTALL_DIR=/opt/ibm/spectrum # If INSTALL_TYPE=shared, this directo
 export BASE_SHARED_DIR=/opt/nfs/spectrum-share # Must be on shared FS.
 export EGO_SHARED_DIR= # Optional, specify the EGO shared directory to use for High Availability (only useful if there are multiple management hosts). Must be on shared FS.
 
+###### BELOW THIS POINT, YOU CAN KEEP DEFAULT CONFIGURATION UNLESS YOU WANT TO CUSTOMIZE IT #####
+
+### FIND DEPLOYMENT DIRECTORY BASED ON INSTALL_TYPE AND DEPLOYMENT_TYPE
+if [ "$INSTALL_TYPE" == "shared" -o "$DEPLOYMENT_TYPE" == "shared" ]
+then
+  DEPLOYMENT_DIR=$BASE_SHARED_DIR
+else
+  DEPLOYMENT_DIR=$BASE_INSTALL_DIR
+fi
+
 ### DEPLOYMENT DIRECTORIES
-export IG_DIR=$BASE_INSTALL_DIR/instance-groups # Specify base directory where Instance Groups will be deployed. If INSTALL_TYPE=shared or DEPLOYMENT_TYPE=shared, it must be on shared FS.
-export ANACONDA_DIR=$BASE_INSTALL_DIR/anaconda # Specify base directory where Anaconda instances will be deployed. If INSTALL_TYPE=shared or DEPLOYMENT_TYPE=shared, it must be on shared FS.
+export IG_DIR=$DEPLOYMENT_DIR/instance-groups # Specify base directory where Instance Groups will be deployed. If INSTALL_TYPE=shared or DEPLOYMENT_TYPE=shared, it must be on shared FS.
+export ANACONDA_DIR=$DEPLOYMENT_DIR/anaconda # Specify base directory where Anaconda instances will be deployed. If INSTALL_TYPE=shared or DEPLOYMENT_TYPE=shared, it must be on shared FS.
 
 ### INSTALL DIRECTORIES
 export INSTALL_DIR=$BASE_INSTALL_DIR/install # Directory where Conductor will be installed. If INSTALL_TYPE=shared, it must be on shared FS.
 export RPMDB_DIR=$BASE_INSTALL_DIR/rpmdb # Directory for Conductor RPMs database. If INSTALL_TYPE=shared, it must be on shared FS.
-export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
-
-###### BELOW THIS POINT, YOU CAN KEEP DEFAULT CONFIGURATION UNLESS YOU WANT TO CUSTOMIZE IT #####
+if [ "$INSTALL_TYPE" == "local" -a "$DEPLOYMENT_TYPE" == "shared" ]
+then
+  export ELASTIC_HARVEST_DIR=$BASE_SHARED_DIR/elastic_logs # Only required if INSTALL_TYPE=local and DEPLOYMENT_TYPE=shared. Specify the directory which Filebeat will use. It must be on shared FS.
+fi
 
 ### SUB-DIRECTORIES UNDER BASE DIRECTORIES
 export SPARKHA_DIR=$BASE_SHARED_DIR/spark-ha # Directory that Spark of Instance Groups will use for High Availability. It must be on shared FS.
@@ -44,7 +55,7 @@ export ARCH=`uname -m` # Identify current architecture of the server.
 ### COMMON
 export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
 export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le Anaconda2019.03-Python3-Linux-x86_64" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
-export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
+export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
 
 ### ANACONDA PARAMETERS FOR INSTANCE GROUPS IF CREATED
 export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
@@ -78,7 +89,6 @@ export CACHE_DIR=`dirname "$(readlink -f "$0")"`/cache # Base directory that the
 export LOG_DIR=`dirname "$(readlink -f "$0")"`/logs # Directory where all log files will be written.
 export SYNC_DIR=$CACHE_DIR/sync # Only required if INSTALL_TYPE=local and there are additional management hosts. Directory where install-host.sh script will write lock file to avoid conflict for the parallel execution of the script on different hosts.
 export SCRIPTS_TMP_DIR=$CACHE_DIR/generated-scripts # Only required if you use install-cluster.sh. Directory where install-cluster.sh will generate scripts to install each type of host, and run them remotely.
-export ANACONDA_LOCAL_INSTALL_DIR=$CACHE_DIR/anaconda-local-install # Only required if you use prepare-airgap-install.sh. Directory where Anaconda will be installed to prepare conda packages to create the local conda channel.
 
 ### COMMON
 export MANAGEMENTHOSTS_FILE=`dirname "$(readlink -f "$0")"`/conf/management-hosts.txt # Path of file containing list of additional management hosts (FQDN as returned by "hostname -f"), 1 host per line.
@@ -99,12 +109,22 @@ export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM
 export CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT=120 # Duration in seconds to wait for compute hosts to join the cluster before creating User Environment (only used by install-cluster.sh).
 
 ### ANACONDA LOCAL CHANNEL
-export ANACONDA_LOCAL_CHANNEL=disabled # Specify enabled or disabled. If enabled, installation of conda environments will be done using the local channel from ANACONDA_LOCAL_CHANNEL_DIR if folder exists, or from ANACONDA_LOCAL_CHANNEL_ARCHIVE if file exists.
+export ANACONDA_LOCAL_CHANNEL=disabled # Specify enabled or disabled. If enabled, script prepare-local-conda-channel.sh will create the conda local channel, and installation of conda environments will be done using the local channel from ANACONDA_LOCAL_CHANNEL_DIR if folder exists, or from ANACONDA_LOCAL_CHANNEL_ARCHIVE if file exists.
+export ANACONDA_LOCAL_CONDA_ENV_CREATION_TYPE=profile # Specify profile or twosteps. If profile is specified, conda environment will be created with the profile. If twosteps if specified, empty conda environment will be created first, then packages from the profile will be installed.
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
-export ANACONDA_LOCAL_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
-export ANACONDA_LOCAL_CHANNEL_DIR=$CACHE_DIR/anaconda-local-channel # Only required if you use prepare-airgap-install.sh. Specify the directory of the local conda channel.
-export ANACONDA_LOCAL_CHANNEL_ARCHIVE=$CACHE_DIR/anaconda-local-channel.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) of the local conda channel.
+export ANACONDA_LOCAL_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-local-conda-channel.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
+export ANACONDA_LOCAL_INSTALL_DIR=$CACHE_DIR/anaconda-local-install # Only required if you use prepare-local-conda-channel.sh. Directory where Anaconda will be installed to prepare conda packages to create the local conda channel.
+export ANACONDA_LOCAL_CHANNEL_DIR=$CACHE_DIR/anaconda-local-channel # Only required if you use prepare-local-conda-channel.sh. Specify the directory of the local conda channel.
+export ANACONDA_LOCAL_CHANNEL_ARCHIVE=$CACHE_DIR/anaconda-local-channel.tgz # Only required if you use prepare-local-conda-channel.sh. Specify the name of the archive (.tgz) of the local conda channel.
+export ANACONDA_LOCAL_CHANNEL_STRICT=disabled # Only required if you use prepare-local-conda-channel.sh. Specify enabled or disabled. If enabled, creation of conda environments will only use the local channel. It needs to be enabled if you are in an airgap environment.
+
+### ANACONDA AIRGAP INSTALL
+export ANACONDA_AIRGAP_INSTALL=disabled # Specify enabled or disabled. If enabled, script prepare-airgap-install.sh will create the airgap Anaconda instance with needed conda environments, and Instance Groups will use the Anaconda instance which will be created from ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE if necessary.
+export ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
+export ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
+export ANACONDA_AIRGAP_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
+export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-ig.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the conda environments for Instance Groups.
 
 ### EGO DEFAULT SETTINGS
 export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation.

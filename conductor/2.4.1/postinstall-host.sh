@@ -6,7 +6,7 @@
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
-export LOG_FILE=$LOG_DIR/postinstall-host_`hostname -s`.log
+export LOG_FILE=$LOG_DIR/postinstall_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
 log "Starting host post-installation"
@@ -60,6 +60,7 @@ then
 fi
 
 log "Starting EGO"
+applyUlimits
 egosh ego start 2>&1 | tee -a $LOG_FILE
 
 log "Host post-installation finished!" SUCCESS

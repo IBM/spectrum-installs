@@ -20,6 +20,7 @@ restartCluster() {
 	egosh service stop all >/dev/null
 	log "Wait for EGO services to be stopped"
 	waitForEgoServicesStopped
+	applyUlimits
 	log "Restart EGO"
 	egosh ego restart -f all 2>&1 | tee -a $LOG_FILE
 	log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
@@ -180,10 +181,42 @@ createConsumer() {
 }
 
 installIfix() {
-	IFIX_FILE=$1
+	local IFIX_FILE=$1
 	TMP_FIX=/tmp/`basename $IFIX_FILE`
 	cp -f $IFIX_FILE $TMP_FIX 2>&1 | tee -a $LOG_FILE
 	chmod o+r $TMP_FIX 2>&1 | tee -a $LOG_FILE
 	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoinstallfixes --silent $TMP_FIX" 2>&1 | tee -a $LOG_FILE
 	rm -f $TMP_FIX 2>&1 | tee -a $LOG_FILE
+}
+
+installRPMs() {
+	local RPM_PATH=$1
+	local RPM_NAME=$2
+	log "Installing $RPM_NAME RPMs"
+	rpm -ivh --ignoresize --prefix $INSTALL_DIR --dbpath $RPMDB_DIR $RPM_PATH 2>&1 | tee -a $LOG_FILE
+	RPMINSTALL_ERRORCODE=${PIPESTATUS[0]}
+	if [ $RPMINSTALL_ERRORCODE -eq 0 ]
+	then
+		log "$RPM_NAME RPMs successfully installed" SUCCESS
+	else
+		log "Error during installation of $RPM_NAME RPMs (error code: $PKGINSTALL_ERRORCODE), aborting" ERROR
+		exit 1
+	fi
+}
+
+applyEntitlement() {
+	local ENTITLEMENT_PATH=$1
+	local ENTITLEMENT_NAME=$2
+	log "Entitle $ENTITLEMENT_NAME"
+	TMP_ENTITLEMENT=/tmp/`basename $ENTITLEMENT_PATH`
+	cp -f $ENTITLEMENT_PATH $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	chmod o+r $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig setentitlement $TMP_ENTITLEMENT" 2>&1 | tee -a $LOG_FILE
+	CODE=${PIPESTATUS[0]}
+	rm -f $TMP_ENTITLEMENT 2>&1 | tee -a $LOG_FILE
+	if [ $CODE -ne 0 ]
+	then
+		log "Failed to apply $ENTITLEMENT_NAME entitlement" ERROR
+		exit 1
+	fi
 }
