@@ -265,7 +265,8 @@ testInstall() {
   ls -Ralh $CACHE_DIR > $TEST_DIR/ls-CACHE_DIR.txt
   if [ $ERRORCODE -eq 0 ]
   then
-		sleep 180
+		log "Waiting 180 seconds before checking install"
+	  	sleep 180
 		checkInstall $TEST_ID "$SERVERS_LIST"
   fi
 	cleanup $TEST_ID

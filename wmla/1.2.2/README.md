@@ -31,7 +31,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 
 ## 3. Pre-requisites
 * Servers need to be installed on a supported OS version (RHEL 7.7 on x86, RHEL 7.6 on Power) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_hwandsw_reqs.html).
-* If there are GPUs in server, nvidia driver needs to be installed.
+* If there are GPUs in server, nvidia driver and CUDA toolkit needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
 * It is recommended to use these scripts from a shared filesystem accessible by all hosts. However if each node are installed individually without *install-cluster.sh*, scripts can be on local filesystem of each node and only the following parameters in *parameters.inc* need to be on a shared filesystem:
