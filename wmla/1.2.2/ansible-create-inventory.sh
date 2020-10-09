@@ -22,6 +22,7 @@ log "Adding variables"
 echo "[all:vars]" > $ANSIBLE_INVENTORY_FILE
 echo "scripts_dir=\"`dirname "$(readlink -f "$0")"`\"" >> $ANSIBLE_INVENTORY_FILE
 echo "install_dir=\"$INSTALL_DIR\"" >> $ANSIBLE_INVENTORY_FILE
+echo "base_install_dir=\"$BASE_INSTALL_DIR\"" >> $ANSIBLE_INVENTORY_FILE
 echo "base_shared_dir=\"$BASE_SHARED_DIR\"" >> $ANSIBLE_INVENTORY_FILE
 echo "ego_shared_dir=\"$EGO_SHARED_DIR\"" >> $ANSIBLE_INVENTORY_FILE
 echo "cluster_admin=\"$CLUSTERADMIN\"" >> $ANSIBLE_INVENTORY_FILE

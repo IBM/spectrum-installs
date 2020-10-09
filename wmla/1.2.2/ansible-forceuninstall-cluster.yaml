@@ -40,6 +40,14 @@
   become: yes
 
   tasks:
+  - name: Delete {{ base_install_dir }}
+    file:
+     path: "{{ base_install_dir }}"
+     state: absent
+    when:
+     - base_install_dir is defined and base_install_dir != ""
+     - install_type == "shared"
+
   - name: Delete {{ base_shared_dir }}
     file:
      path: "{{ base_shared_dir }}"
