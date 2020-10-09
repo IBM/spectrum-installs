@@ -1,0 +1,53 @@
+---
+# This ansible playbook will uninstall the Conductor cluster
+
+- name: Inventory and variables validation
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - fail:
+     msg: "Group masterhost must be defined"
+    when: "'masterhost' not in groups"
+
+  - assert:
+     that:
+      - "groups['masterhost'] | length == 1"
+     fail_msg: "Group masterhost must contain only 1 host"
+
+  - assert:
+     that:
+      - scripts_dir is defined
+     fail_msg: "Variable scripts_dir must be defined"
+
+- name: Uninstall master host
+  hosts: masterhost
+  become: yes
+
+  tasks:
+  - name: execute forceuninstall-host.sh
+    command: "{{ scripts_dir }}/forceuninstall-host.sh"
+
+- name: Uninstall management and compute hosts
+  hosts: managementhosts:computehosts
+  become: yes
+
+  tasks:
+  - name: execute forceuninstall-host.sh
+    command: "{{ scripts_dir }}/forceuninstall-host.sh"
+
+- name: Delete shared directories
+  hosts: masterhost
+  become: yes
+
+  tasks:
+  - name: Delete {{ base_shared_dir }}
+    file:
+     path: "{{ base_shared_dir }}"
+     state: absent
+    when: base_shared_dir is defined and base_shared_dir != ""
+
+  - name: Delete {{ ego_shared_dir }}
+    file:
+     path: "{{ ego_shared_dir }}"
+     state: absent
+    when: ego_shared_dir is defined and ego_shared_dir != ""
