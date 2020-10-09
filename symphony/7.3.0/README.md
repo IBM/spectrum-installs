@@ -19,6 +19,7 @@
 ## 1. Description
 These scripts will install or uninstall IBM Spectrum Symphony 7.3.0 on a cluster of x86_64 or ppc64le servers, with RHEL Operating System, either local or shared install.  
 It can also create a demo environment: user id, sample applications using symping and enable the Value-at-Risk demo application.  
+Installation can be done using these bash scripts, or using the Ansible playbook.
 Official documentation of IBM Spectrum Symphony is available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/sym_kc_welcome.html).
 
 ## 2. Components installed
@@ -36,6 +37,10 @@ Official documentation of IBM Spectrum Symphony is available [here](https://www.
   * these scripts must be in a shared filesystem accessible by all hosts.
   * password-less SSH must be enabled for root from the host where this script is executed to all the hosts of the cluster.
   * optionally pssh package can be installed (from epel yum repo) in order to run installation on compute hosts in parallel.
+* If the Ansible playbook is used to install the cluster:
+  * Ansible must be installed on the host where the playbook will be executed.
+  * The user used to execute the playbook must have password-less ssh access to all hosts of the cluster.
+  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation. 
 
 ## 4. Usage
 
@@ -97,20 +102,34 @@ Execute the following script, as root, on any server having password-less ssh ac
 ./install-cluster.sh
 ```
 
-#### 4.3.2. Installing each node individually
+#### 4.3.2. Installing using Ansible
+The Ansible playbook *ansible-install-cluster.yaml* can be used to install the cluster.  
+This playbook will execute the different scripts on each server.  
+Steps:  
+1. Execute *ansible-create-inventory.sh* to prepare the inventory file. Inventory will be created based on the configuration defined in the files in *conf* directory.  
+2. Execute ansible playbook *ansible-install-cluster.yaml*:  
+```bash
+ansible-playbook ansible-install-cluster.yaml -i ansible-inventory.ini
+```
 
-##### 4.3.2.1. Step by step
+#### 4.3.3. Installing each node individually
+
+##### 4.3.3.1. Step by step
 1. Execute *prepare-host.sh* as root on all servers.
 2. Execute *install-host.sh* as root, on all servers if *INSTALL_TYPE=local* (starting with the master) or only on master if *INSTALL_TYPE=shared*.
 3. If *SSL=enabled* and self-signed certificates will be used, execute *update-ssl-host.sh* as root on all hosts starting with the master host.
 4. Execute *postinstall-host.sh* as root on all servers.
-5. To create demo environment, execute *create-demo-environment.sh* on master. It will create a user id, sample applications using symping and enable the Value-at-Risk demo application.
-6. If there are multiple management nodes, the master candidates list need to be configured either from Symphony GUI or with this CLI:
+5. If there are multiple management nodes, master host need to be restarted to take them into account:
 ```bash
-su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f"
+su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egosh ego restart -f"
+```
+6. To create demo environment, execute *create-demo-environment.sh* on master. It will create a user id, sample applications using symping and enable the Value-at-Risk demo application.
+7. If there are multiple management nodes, the master candidates list need to be configured either from Symphony GUI or with this CLI:
+```bash
+su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f && egosh ego restart -f"
 ```
 
-##### 4.3.2.2. Short version
+##### 4.3.3.2. Short version
 1. Local install / SSL enabled - Execute on master host:
 ```bash
 ./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
@@ -119,11 +138,11 @@ su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig master
 ```bash
 ./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
-2. Shared install / SSL enabled - Execute on master host:
+3. Shared install / SSL enabled - Execute on master host:
 ```bash
 ./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
 ```
-3. Shared install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-ssl-host.sh* is executed on master host before executing it on other hosts):
+4. Shared install / SSL enabled - Execute on additional management hosts and compute hosts (make sure *update-ssl-host.sh* is executed on master host before executing it on other hosts):
 ```bash
 ../prepare-host.sh && ./postinstall-host.sh
 ```
@@ -138,7 +157,17 @@ Execute the following script, as root, on any server having password-less ssh ac
 ./forceuninstall-cluster.sh
 ```
 
-#### 4.4.2. Uninstalling each node individually
+#### 4.4.2. Uninstalling using Ansible
+The Ansible playbook *ansible-forceuninstall-cluster.yaml* can be used to uninstall the cluster.  
+This playbook will execute the different scripts on each server.  
+Steps:  
+1. If needed, execute *ansible-create-inventory.sh* to prepare the inventory file. Inventory will be created based on the configuration defined in the files in *conf* directory.  
+2. Execute ansible playbook *ansible-forceuninstall-cluster.yaml*:  
+```bash
+ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
+```
+
+#### 4.4.3. Uninstalling each node individually
 1. Execute the following script, as root, on each host of the cluster, starting with the master host:
 ```bash
 ./forceuninstall-host.sh
@@ -156,6 +185,9 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __create-demo-environment.sh__: Script to create a demo environment (user id and sample applications).
 * __forceuninstall-host.sh__: Uninstall Symphony on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
 * __forceuninstall-cluster.sh__: Uninstall Symphony on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *EGO_SHARED_DIR*).
+* __ansible-create-inventory.sh__: Create the Ansible inventory file to be used with *ansible-install-cluster.yaml* and *ansible-forceuninstall-cluster.yaml* playbooks.
+* __ansible-install-cluster.yaml__: Ansible playbook to install the cluster.
+* __ansible-forceuninstall-cluster.yaml__: Ansible playbook to uninstall the cluster.
 * __test-scripts.sh__: Script to test that these install scripts work properly. It should only be used by developers of these scripts.
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.
