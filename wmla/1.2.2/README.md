@@ -22,6 +22,7 @@
 These scripts will install or uninstall Watson Machine Learning Accelerator 1.2.2 on a cluster of x86_64 or ppc64le servers, either local or shared install.  
 It can also create 3 Instance Groups, 1 with Spark 2.4.3 and Jupyter notebook and 2 for Deep Learning Impact component (1 for EDT and 1 for non EDT).  
 Installation can be done in an airgap environment (environment without internet access) if needed.  
+Installation can be done using these bash scripts, or using the Ansible playbook.
 Official documentation of WMLA is available [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_kc_welcome.html).
 
 ## 2. Components installed
@@ -43,6 +44,10 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
   * these scripts must be in a shared filesystem accessible by all hosts.
   * password-less SSH must be enabled for root from the host where this script is executed to all hosts of the cluster (except for the host where it's executed).
   * optionally pssh package can be installed (from epel yum repo) in order to run installation on management and compute hosts in parallel.
+* If the Ansible playbook is used to install the cluster:
+  * Ansible must be installed on the host where the playbook will be executed.
+  * The user used to execute the playbook must have password-less ssh access to all hosts of the cluster.
+  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation. 
 
 ## 4. Usage
 
@@ -194,20 +199,34 @@ Execute the following script, as root, on any server having password-less ssh ac
 ./install-cluster.sh
 ```
 
-#### 4.5.2. Installing each node individually
+#### 4.5.2. Installing using Ansible
+The Ansible playbook *ansible-install-cluster.yaml* can be used to install the cluster.  
+This playbook will execute the different scripts on each server.  
+Steps:  
+1. Execute *ansible-create-inventory.sh* to prepare the inventory file. Inventory will be created based on the configuration defined in the files in *conf* directory.  
+2. Execute ansible playbook *ansible-install-cluster.yaml*:  
+```bash
+ansible-playbook ansible-install-cluster.yaml -i ansible-inventory.ini
+```
 
-##### 4.5.2.1. Step by step
+#### 4.5.3. Installing each node individually
+
+##### 4.5.3.1. Step by step
 1. Execute *prepare-host.sh* as root on all servers.
 2. Execute *install-host.sh* as root, on all servers if *INSTALL_TYPE=local* (starting with the master) or only on master if *INSTALL_TYPE=shared*.
 3. If *SSL=enabled* and self-signed certificates will be used, execute *update-ssl-host.sh* as root on all hosts starting with the master host.
 4. Execute *postinstall-host.sh* as root on all servers.
+5. If there are multiple management nodes, master host need to be restarted to take them into account:
+```bash
+su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egosh ego restart -f"
+```
 5. To create User environment, execute *create-user-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from WMLA GUI or with this CLI:
 ```bash
-su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f"
+su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f && egosh ego restart -f"
 ```
 
-##### 4.5.2.2. Short version
+##### 4.5.3.2. Short version
 1. Local install / SSL enabled - Execute on master host:
 ```bash
 ./prepare-host.sh && ./install-host.sh && ./update-ssl-host.sh && ./postinstall-host.sh
@@ -235,7 +254,17 @@ Execute the following script, as root, on any server having password-less ssh ac
 ./forceuninstall-cluster.sh
 ```
 
-#### 4.6.2. Uninstalling each node individually
+#### 4.6.2. Uninstalling using Ansible
+The Ansible playbook *ansible-forceuninstall-cluster.yaml* can be used to uninstall the cluster.  
+This playbook will execute the different scripts on each server.  
+Steps:  
+1. If needed, execute *ansible-create-inventory.sh* to prepare the inventory file. Inventory will be created based on the configuration defined in the files in *conf* directory.  
+2. Execute ansible playbook *ansible-forceuninstall-cluster.yaml*:  
+```bash
+ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
+```
+
+#### 4.6.3. Uninstalling each node individually
 1. Execute the following script, as root, on each host of the cluster, starting with the master host:
 ```bash
 ./forceuninstall-host.sh
@@ -256,6 +285,9 @@ Execute the following script, as root, on any server having password-less ssh ac
 * __prepare-airgap-install.sh__: Script to download Anaconda distribution and create conda environments.
 * __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
 * __forceuninstall-cluster.sh__: Uninstall WMLA on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *BASE_SHARED_DIR* and *EGO_SHARED_DIR*).
+* __ansible-create-inventory.sh__: Create the Ansible inventory file to be used with *ansible-install-cluster.yaml* and *ansible-forceuninstall-cluster.yaml* playbooks.
+* __ansible-install-cluster.yaml__: Ansible playbook to install the cluster.
+* __ansible-forceuninstall-cluster.yaml__: Ansible playbook to uninstall the cluster.
 * __test-scripts.sh__: Script to test that these install scripts work properly. It should only be used by developers of these scripts.
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.

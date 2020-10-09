@@ -1,0 +1,123 @@
+---
+# This ansible playbook will install the WMLA cluster
+
+- name: Inventory and variables validation
+  hosts: localhost
+  gather_facts: false
+  tasks:
+  - fail:
+     msg: "Group masterhost must be defined"
+    when: "'masterhost' not in groups"
+
+  - assert:
+     that:
+      - "groups['masterhost'] | length == 1"
+     fail_msg: "Group masterhost must contain only 1 host"
+
+  - assert:
+     that:
+      - scripts_dir is defined
+     fail_msg: "Variable scripts_dir must be defined"
+
+  - assert:
+     that:
+      - install_dir is defined
+     fail_msg: "Variable install_dir must be defined"
+
+  - assert:
+     that:
+      - cluster_admin is defined
+     fail_msg: "Variable cluster_admin must be defined"
+
+  - assert:
+     that:
+      - install_type is defined and (install_type == "local" or install_type == "shared")
+     fail_msg: "Variable install_type must be defined as local or shared"
+
+  - assert:
+     that:
+      - update_ssl is defined and (update_ssl == "enabled" or update_ssl == "disabled")
+     fail_msg: "Variable update_ssl must be defined as enabled or disabled"
+
+- name: Prepare hosts
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: execute prepare-host.sh
+    command: "{{ scripts_dir }}/prepare-host.sh"
+
+- name: Install master host
+  hosts: masterhost
+  become: yes
+
+  tasks:
+  - name: execute install-host.sh
+    command: "{{ scripts_dir }}/install-host.sh"
+
+  - name: execute update-ssl-host.sh
+    command: "{{ scripts_dir }}/update-ssl-host.sh"
+    when: update_ssl == "enabled"
+
+  - name: execute postinstall-host.sh
+    command: "{{ scripts_dir }}/postinstall-host.sh"
+
+- name: Install management and compute hosts
+  hosts: managementhosts:computehosts
+  become: yes
+
+  tasks:
+  - name: execute install-host.sh
+    command: "{{ scripts_dir }}/install-host.sh"
+    when: install_type == "local"
+
+  - name: execute update-ssl-host.sh
+    command: "{{ scripts_dir }}/update-ssl-host.sh"
+    when:
+     - install_type == "local"
+     - update_ssl == "enabled"
+
+  - name: execute postinstall-host.sh
+    command: "{{ scripts_dir }}/postinstall-host.sh"
+
+- name: Restart master host
+  hosts: masterhost
+  become: yes
+
+  tasks:
+  - name: restart EGO to take into account new management hosts
+    shell: source {{ install_dir }}/profile.platform && egosh ego restart -f
+    when: groups['managementhosts'] | length >= 1
+
+  - name: Pause for 15 seconds to make sure all EGO processes restarted
+    pause:
+     seconds: 15
+    when: groups['managementhosts'] | length >= 1
+
+- name: Define master candidates list
+  hosts: masterhost
+  become: yes
+  become_user: "{{ cluster_admin }}"
+
+  tasks:
+  - name: define master candidates list
+    shell: source {{ install_dir }}/profile.platform && egoconfig masterlist "{{ groups['mastercandidatehosts'] | join(',') }}" -f
+    when: "'mastercandidatehosts' in groups and groups['mastercandidatehosts'] | length >= 1"
+
+  - name: restart EGO to take into account new master candidates list
+    shell: source {{ install_dir }}/profile.platform && egosh ego restart -f
+    when: "'mastercandidatehosts' in groups and groups['mastercandidatehosts'] | length >= 1"
+
+  - name: Pause for 15 seconds to make sure all EGO processes restarted
+    pause:
+     seconds: 15
+    when: "'mastercandidatehosts' in groups and groups['mastercandidatehosts'] | length >= 1"
+
+- name: Create user environment
+  hosts: masterhost
+  become: yes
+
+  tasks:
+  - name: execute create-user-environment.sh
+    command: "{{ scripts_dir }}/create-user-environment.sh"
+    when: create_user_environment is defined and create_user_environment == "enabled"
