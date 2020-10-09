@@ -7,6 +7,7 @@
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions-common.inc
 export LOG_FILE=$LOG_DIR/ansible-create-inventory_`hostname -s`.log
+[[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
 log "Starting to create ansible inventory file"
 
