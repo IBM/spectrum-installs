@@ -424,7 +424,7 @@ createAnacondaInstance() {
 		exit 1
 	fi
 	log "Deploying Anaconda instance $ANACONDA_INSTANCE_NAME"
-	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X PUT ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/deploy`
+	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X PUT ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/deploy?timeout=6000`
 	local RESPONSE=${CURL_OUT:0:(-3)}
 	local HTTP_CODE=${CURL_OUT:(-3)}
 	if [ "$HTTP_CODE" == "204" ]
