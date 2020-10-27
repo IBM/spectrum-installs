@@ -73,3 +73,30 @@ getApplicationState() {
   fi
   eval $__resultvar="'$APP_STATE'"
 }
+
+getApplicationProfile() {
+  local APP_NAME=$1
+  local __resultvar=$2
+  local APP_PROFILE_PATH=/tmp/$APP_NAME-`date +%s%N | md5sum | head -c8`.xml
+  authenticate
+  soamview app $APP_NAME -p > $APP_PROFILE_PATH 2>/dev/null
+  local CODE=$?
+  if [ $CODE -ne 0 ]
+  then
+    log "Failed to export application profile of application $APP_NAME (error code: $CODE)" WARNING
+  fi
+  eval $__resultvar="'$APP_PROFILE_PATH'"
+}
+
+updateApplication() {
+  local APP_PROFILE=$1
+  authenticate
+  soamreg $APP_PROFILE -f 2>&1 | tee -a $LOG_FILE
+  local CODE=$?
+  if [ $CODE -eq 0 ]
+  then
+    log "Application updated using application profile $APP_PROFILE" SUCCESS
+  else
+    log "Failed to update application using application profile $APP_PROFILE (error code: $CODE)" WARNING
+  fi
+}

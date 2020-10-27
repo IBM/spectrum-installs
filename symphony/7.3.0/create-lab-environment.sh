@@ -34,6 +34,11 @@ if [ "$DEMO_VAR_APP_STATE" == "disabled" ]
 then
   log "Enabling VaR demo application"
   enableApplication $DEMO_VAR_APP_NAME
+
+  log "Updating low water mark of $DEMO_VAR_APP_NAME application to 1.0"
+  getApplicationProfile $DEMO_VAR_APP_NAME DEMO_VAR_APP_PROFILE
+  sed -i 's/taskLowWaterMark="0.0"/taskLowWaterMark="1.0"/g' $DEMO_VAR_APP_PROFILE 2>&1 | tee -a $LOG_FILE
+  updateApplication $DEMO_VAR_APP_PROFILE
 fi
 
 log "Assigning Consumer user role to $LAB_USER for parent consumer ${DEMO_VAR_CONSUMER_PATH%/*} of consumer $DEMO_VAR_CONSUMER_PATH in which demo application $DEMO_VAR_APP_NAME is deployed"
