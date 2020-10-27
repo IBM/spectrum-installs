@@ -118,4 +118,11 @@ createIgNotebookInstance "$EGO_ADMIN_USERNAME" "$IG_UUID" "Jupyter" "5.4.0"
 log "Create Notebook Instance for user $IG_USER_NAME on Instance Group $IG_SPARK243_NAME"
 createIgNotebookInstance "$IG_USER_NAME" "$IG_UUID" "Jupyter" "5.4.0"
 
+if [ -d $NOTEBOOK_SOURCE_DIR ]
+then
+  log "Create sample notebooks for user $IG_USER_NAME on Instance Group $IG_SPARK243_NAME using the source directory: $NOTEBOOK_SOURCE_DIR"
+  getIgUUID $IG_SPARK243_NAME
+  createSampleNotebooks "$IG_USER_NAME" "$IG_UUID"
+fi
+
 log "User environment created successfully!" SUCCESS

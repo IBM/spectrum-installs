@@ -444,6 +444,29 @@ removeIgNotebookInstance() {
 	fi
 }
 
+createSampleNotebooks(){
+	local NOTEBOOK_INSTANCE_USER=$1
+	local IG_UUID=$2
+
+	local SERVICENAME=$(curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H 'Accept:application/json' -H 'Content-Type:application/json' -X GET ${ASCD_REST_BASE_URL}conductor/v1/instances/${IG_UUID}/notebooks | jq -r '.[] | select(.username =="'$NOTEBOOK_INSTANCE_USER'") | .servicename')
+	local DATADIR=$(curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H 'Accept:application/json' -H 'Content-Type:application/json' -X GET ${EGO_REST_BASE_URL}ego/v1/services/${SERVICENAME}/profile | jq -r '.activitydescriptions[].activityspecification.environmentvariables[] | select(.name == "NOTEBOOK_DATA_DIR") | .value')
+	local NOTEDIR="${DATADIR}/notebooks"
+
+	local SERVICESTATE=""
+
+	while [ "$SERVICESTATE" != "STARTED" ]
+	do
+		local SERVICESTATE=$(curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H 'Accept:application/json' -H 'Content-Type:application/json' -X GET ${EGO_REST_BASE_URL}ego/v1/services/${SERVICENAME}/state | jq -r '.state')	
+		log "Notebook starting (state: $SERVICESTATE) ..."
+		sleep $STATUS_CHECK_WAITTIME
+	done
+
+	cp -R ${NOTEBOOK_SOURCE_DIR}/* $NOTEDIR
+	chown -R $CLUSTERADMIN:$CLUSTERADMIN $NOTEDIR
+
+	log "Notebooks have been seeded at $NOTEDIR" SUCCESS
+}
+
 getIgs(){
 	getRestUrls
 	local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X GET ${ASCD_REST_BASE_URL}conductor/v1/instances`
