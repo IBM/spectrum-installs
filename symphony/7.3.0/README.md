@@ -10,6 +10,7 @@
     [4.2. Download and prepare Symphony and ifix files](#42-download-and-prepare-symphony-and-ifix-files)  
     [4.3. Install the cluster](#43-install-the-cluster)  
     [4.4. Uninstall the cluster](#44-uninstall-the-cluster)  
+    [4.5. Managing lab environments](#45-managing-lab-environments)  
 [5. Description of files](#5-description-of-files)  
 [6. Comments for SSL Certificates](#6-comments-for-ssl-certificates)  
 [7. Info](#7-info)  
@@ -175,6 +176,32 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 2. Delete the shared directories:
 * EGO_SHARED_DIR
 
+### 4.5. Managing lab environments
+Multiple lab environments can be created to let users test Symphony.  
+Each lab environment have a user account to connect to Symphony GUI, 2 applications using symping, and access to the Value-at-Risk demo application.  
+
+#### 4.5.1. Create a lab environment
+To create a lab environment:
+1. Edit parameters in *conf/lab-environment.inc*. Mandatory parameters to update:
+* EGO_ADMIN_USERNAME
+* EGO_ADMIN_PASSWORD
+
+2. Execute the following script:
+```bash
+./create-lab-environment.sh
+```
+
+#### 4.5.2. Delete a lab environment
+To delete a lab environment:
+1. Edit parameters in *conf/lab-environment.inc*. Mandatory parameters to update:
+* EGO_ADMIN_USERNAME
+* EGO_ADMIN_PASSWORD
+
+2. Execute the following script, with the username of the lab environment to delete as argument:
+```bash
+./delete-lab-environment.sh <USERNAME>
+```
+
 ## 5. Description of files
 * __README.md__: Description of the scripts and how to use.
 * __prepare-host.sh__: Script to prepare current host before installation.
@@ -183,6 +210,8 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 * __postinstall-host.sh__: Post-installation script (Define rc init script for Symphony and EGO sudoers on current host).
 * __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
 * __create-demo-environment.sh__: Script to create a demo environment (user id and sample applications).
+* __create-lab-environment.sh__: Script to create a lab environment (user id and sample applications).
+* __delete-lab-environment.sh__: Script to delete a lab environment.
 * __forceuninstall-host.sh__: Uninstall Symphony on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
 * __forceuninstall-cluster.sh__: Uninstall Symphony on all hosts (stop EGO services, stop EGO on all hosts, delete *BASE_INSTALL_DIR* on all hosts, delete *EGO_SHARED_DIR*).
 * __ansible-create-inventory.sh__: Create the Ansible inventory file to be used with *ansible-install-cluster.yaml* and *ansible-forceuninstall-cluster.yaml* playbooks.
@@ -193,6 +222,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
     * __parameters.inc__: Parameters for the installation.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
+    * __lab-environment.inc__: Parameters to create and delete lab environments.
 * __functions/__:
     * __functions.inc__: Include all functions files.
     * __functions-common.inc__: Common functions for scripts.
