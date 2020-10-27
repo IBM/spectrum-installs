@@ -9,7 +9,7 @@ createApplication() {
   local TMP_PROFILE=/tmp/app-profile-`date | md5sum | head -c8`.xml
   local CONSUMER_PATH=${CONSUMER_PATH//\//\\\/}
   authenticate
-	cp $PROFILE_TEMPLATE $TMP_PROFILE 2>&1 | tee -a $LOG_FILE
+  cp $PROFILE_TEMPLATE $TMP_PROFILE 2>&1 | tee -a $LOG_FILE
   sed -i 's/##APP_NAME##/'$APP_NAME'/g' $TMP_PROFILE 2>&1 | tee -a $LOG_FILE
   sed -i 's/##CONSUMER_PATH##/'$CONSUMER_PATH'/g' $TMP_PROFILE 2>&1 | tee -a $LOG_FILE
   sed -i 's/##RG_COMPUTE_NAME##/'$RG_COMPUTE_NAME'/g' $TMP_PROFILE 2>&1 | tee -a $LOG_FILE
@@ -27,15 +27,15 @@ createApplication() {
 }
 
 deleteApplication() {
-	local APP_NAME=$1
-	authenticate
-	soamunreg $APP_NAME -f 2>&1 | tee -a $LOG_FILE
-	local CODE=${PIPESTATUS[0]}
-	if [ $CODE -ne 0 ]
-	then
-		log "Failed to delete application $APP_NAME (exit code: $CODE), aborting" ERROR
-		exit 1
-	fi
+  local APP_NAME=$1
+  authenticate
+  soamunreg $APP_NAME -f 2>&1 | tee -a $LOG_FILE
+  local CODE=${PIPESTATUS[0]}
+  if [ $CODE -ne 0 ]
+  then
+    log "Failed to delete application $APP_NAME (exit code: $CODE), aborting" ERROR
+    exit 1
+  fi
 }
 
 enableApplication() {
@@ -50,4 +50,26 @@ enableApplication() {
     log "Failed to enable application $APP_NAME (exit code: $CODE), aborting" ERROR
     exit 1
   fi
+}
+
+getApplicationState() {
+  local APP_NAME=$1
+  local __resultvar=$2
+  authenticate
+  soamview app $APP_NAME 2>&1 | grep "enabled" >/dev/null 2>&1
+  local CODE=$?
+  if [ $CODE -eq 0 ]
+  then
+    local APP_STATE=enabled
+  else
+    soamview app $APP_NAME 2>&1 | grep "disabled" >/dev/null 2>&1
+    local CODE=$?
+    if [ $CODE -eq 0 ]
+    then
+      local APP_STATE=disabled
+    else
+      local APP_STATE=unknown
+    fi
+  fi
+  eval $__resultvar="'$APP_STATE'"
 }
