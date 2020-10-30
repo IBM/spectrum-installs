@@ -15,7 +15,34 @@ waitForEgoServiceStarted SD
 log "Finding available user id"
 findAvailableUsername $LAB_USER_BASE LAB_USER
 
-log "Creating user $LAB_USER"
+if [ "$LAB_CREATE_OS_USER" == "enabled" ]
+then
+  if id "$LAB_USER" &>/dev/null; then
+    log "Cannot create OS user $LAB_USER, it already exists" ERROR
+    exit 1
+  fi
+
+  log "Creating OS user $LAB_USER"
+  useradd $LAB_USER -g $CLUSTERADMIN 2>&1 | tee -a $LOG_FILE
+  CODE=${PIPESTATUS[0]}
+  if [ $CODE -eq 0 ]
+  then
+    log "OS user $LAB_USER created successfully" SUCCESS
+  else
+    log "Failed to create OS user $LAB_USER (exit code: $CODE)" ERROR
+    exit 1
+  fi
+
+  if [[ "$LAB_EXERCISES_TEMPLATES_DIR" != "" && -d "$LAB_EXERCISES_TEMPLATES_DIR" ]]
+  then
+    LAB_USER_EXERCISES_DIR=`eval echo "~$LAB_USER"`/exercises
+    log "Copying $LAB_EXERCISES_TEMPLATES_DIR content to $LAB_USER_EXERCISES_DIR"
+    cp -r $LAB_EXERCISES_TEMPLATES_DIR/* $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+    chown -R $LAB_USER:$CLUSTERADMIN $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+  fi
+fi
+
+log "Creating EGO user $LAB_USER"
 createUser $LAB_USER $LAB_PASSWORD
 
 log "Creating consumers"
