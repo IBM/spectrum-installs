@@ -119,6 +119,14 @@ getRestUrls() {
 	fi
 }
 
+getRestUrlsDLPD() {
+	if [ "$DLPD_REST_BASE_URL" == "" ]
+	then
+		authenticate
+		export DLPD_REST_BASE_URL=`egosh client view DLPD_REST_BASE_URL_1 | awk '/DESCRIPTION/ {print $2}'`
+	fi
+}
+
 createUser() {
 	local USERNAME=$1
 	local PASSWORD=$2
