@@ -148,6 +148,39 @@ createUser() {
 	fi
 }
 
+findAvailableUsername() {
+  local BASE_USERNAME=$1
+  local __resultvar=$2
+  local USERID=1
+  local USERNAME=$BASE_USERNAME$USERID
+  authenticate
+  while true
+  do
+    egosh user view $USERNAME 2>&1 | grep "ACCOUNT" >/dev/null 2>&1
+    if [ $? -ne 0 ]
+    then
+      break
+    else
+      USERID=$((USERID+1))
+      USERNAME=${BASE_USERNAME}${USERID}
+    fi
+  done
+  eval $__resultvar="'$USERNAME'"
+}
+
+deleteUser() {
+  local USERNAME=$1
+  authenticate
+  egosh user delete -u $USERNAME >/dev/null 2>&1
+  local CODE=$?
+  if [ $CODE -ne 0 ]
+  then
+    log "Failed to delete user $USERNAME (error code: $CODE)" WARNING
+  else
+    log "User $USERNAME deleted successfully" SUCCESS
+  fi
+}
+
 createResourceGroupGPU() {
 	local RG_GPU_NAME=$1
 	getRestUrls
@@ -186,6 +219,22 @@ createConsumer() {
 		local RG_LIST="$RG_CPU_NAME,$RG_GPU_NAME"
 	fi
 	egosh consumer add $CONSUMER_PATH -e $EXECUTION_USER -a $ADMIN_USER -g $RG_LIST 2>&1 | tee -a $LOG_FILE
+}
+
+deleteConsumer() {
+  local CONSUMER_PATH=$1
+  getRestUrls
+  local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Content-Type:application/json" -H "Accept:application/json" -X DELETE ${EGO_REST_BASE_URL}ego/v1/consumers/$CONSUMER_PATH`
+  local RESPONSE=${CURL_OUT:0:(-3)}
+  local HTTP_CODE=${CURL_OUT:(-3)}
+  if [ "$HTTP_CODE" == "204" ]
+  then
+    log "Consumer $CONSUMER_PATH deleted successfully" SUCCESS
+  else
+    log "Failed to delete consumer $CONSUMER_PATH (HTTP CODE $HTTP_CODE), aborting. Output of deletion tentative:" ERROR
+    log "$RESPONSE" ERROR
+    exit 1
+  fi
 }
 
 installIfix() {

@@ -6,11 +6,9 @@
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
+source `dirname "$(readlink -f "$0")"`/conf/lab-environment.inc
 export LOG_FILE=$LOG_DIR/create-user-environment_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
-
-override=`dirname "$(readlink -f "$0")"`/conf/extra-user-environment.inc 
-[[ -f $override ]] && log "Detected override $override, applying" WARNING && source $override 
 
 [[ ! -f $IG_SPARK243_PROFILE_TEMPLATE ]] && log "Spark243 Instance Group profile template $IG_SPARK243_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE ]] && log "Spark243 conda profile template $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
@@ -22,6 +20,15 @@ log "Starting to create user environment"
 log "Wait for cluster to start and REST URLs to be accessible"
 waitForClusterUp
 waitForRestUrlsUp
+
+log "Finding available user id"
+findAvailableUsername $LAB_USER_BASE LAB_USER
+log "Creating user $LAB_USER : $LAB_PASSWORD"
+createUser $LAB_USER $LAB_PASSWORD
+
+override=`dirname "$(readlink -f "$0")"`/conf/extra-user-environment.inc
+[[ -f $override ]] && log "Detected override $override, applying" WARNING && source $override
+
 
 if [ "$RG_GPU_NAME" != "" ]
 then
@@ -36,12 +43,15 @@ else
   RG_GPU_NAME=$RG_CPU_NAME
 fi
 
+log "Creating top level consumer for $LAB_USER"
+createConsumer /${LAB_USER} $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
+
 if [ "$IG_ANACONDA_DISTRIBUTION_ID" == "" ]
 then
 	IG_ANACONDA_DISTRIBUTION_ID=$ANACONDA_DISTRIBUTION_ID_DEFAULT
 fi
 log "Create Anaconda instance using distribution $IG_ANACONDA_DISTRIBUTION_ID"
-createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAME" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME" "$CLUSTERADMIN" "$RG_CPU_NAME"
+createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAME" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME" "$CLUSTERADMIN" "$RG_CPU_NAME" "${LAB_USER}"
 
 if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
 then
@@ -71,58 +81,53 @@ else
   createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK243_CONDA_ENV_NAME
 fi
 
-log "Creating user $IG_USER_NAME"
-createUser $IG_USER_NAME $IG_USER_PASSWORD
-
 log "Creating consumers for instance group $IG_DLI_NAME"
-createIgConsumers /$IG_DLI_NAME $IG_DLI_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_DLI_NAME} $IG_DLI_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
 updateResourcePlanIgConsumers $IG_DLI_NAME
 
 log "Create Instance Group $IG_DLI_NAME"
 if [ "$INSTALL_TYPE" == "local" ]
 then
-  createIgDli "$IG_DLI_PROFILE_TEMPLATE" "/$IG_DLI_NAME" "$IG_DLI_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$DLI_SHARED_FS/distrib_workload_config" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "true"
+  createIgDli "$IG_DLI_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLI_NAME}" "$IG_DLI_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$DLI_SHARED_FS/distrib_workload_config" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "true"
 else
-  createIgDli "$IG_DLI_PROFILE_TEMPLATE" "/$IG_DLI_NAME" "$IG_DLI_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$DLI_SHARED_FS/distrib_workload_config" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
+  createIgDli "$IG_DLI_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLI_NAME}" "$IG_DLI_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$DLI_SHARED_FS/distrib_workload_config" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
 fi
 
 log "Creating consumers for instance group $IG_DLIEDT_NAME"
-createIgConsumers /$IG_DLIEDT_NAME $IG_DLIEDT_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_DLIEDT_NAME} $IG_DLIEDT_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
 updateResourcePlanIgConsumers $IG_DLIEDT_NAME
 
 log "Create Instance Group $IG_DLIEDT_NAME"
 if [ "$INSTALL_TYPE" == "local" ]
 then
-  createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/$IG_DLIEDT_NAME" "$IG_DLIEDT_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "true"
+  createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLIEDT_NAME}" "$IG_DLIEDT_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "true"
 else
-  createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/$IG_DLIEDT_NAME" "$IG_DLIEDT_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
+  createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLIEDT_NAME}" "$IG_DLIEDT_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
 fi
 
 log "Creating consumers for instance group $IG_SPARK243_NAME"
-createIgConsumers /$IG_SPARK243_NAME $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_SPARK243_NAME} $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
 updateResourcePlanIgConsumers $IG_SPARK243_NAME
 
 log "Create Instance Group $IG_SPARK243_NAME"
 if [ "$INSTALL_TYPE" == "local" ]
 then
-  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/$IG_SPARK243_NAME" "$IG_SPARK243_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "true"
+  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK243_NAME}" "$IG_SPARK243_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "true"
 else
-  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/$IG_SPARK243_NAME" "$IG_SPARK243_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "false" "$SPARKSHUFFLE_DIR"
+  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK243_NAME}" "$IG_SPARK243_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "false" "$SPARKSHUFFLE_DIR"
 fi
 
 log "Get UUID of Instance Group $IG_SPARK243_NAME"
 getIgUUID $IG_SPARK243_NAME
 
-log "Create Notebook Instance for user $EGO_ADMIN_USERNAME on Instance Group $IG_SPARK243_NAME"
-createIgNotebookInstance "$EGO_ADMIN_USERNAME" "$IG_UUID" "Jupyter" "5.4.0"
-log "Create Notebook Instance for user $IG_USER_NAME on Instance Group $IG_SPARK243_NAME"
-createIgNotebookInstance "$IG_USER_NAME" "$IG_UUID" "Jupyter" "5.4.0"
+log "Create Notebook Instance for user $LAB_USER on Instance Group $IG_SPARK243_NAME"
+createIgNotebookInstance "$LAB_USER" "$IG_UUID" "Jupyter" "5.4.0"
 
 if [ -d $NOTEBOOK_SOURCE_DIR ]
 then
-  log "Create sample notebooks for user $IG_USER_NAME on Instance Group $IG_SPARK243_NAME using the source directory: $NOTEBOOK_SOURCE_DIR"
+  log "Create sample notebooks for user $LAB_USER on Instance Group $IG_SPARK243_NAME using the source directory: $NOTEBOOK_SOURCE_DIR"
   getIgUUID $IG_SPARK243_NAME
-  createSampleNotebooks "$IG_USER_NAME" "$IG_UUID"
+  createSampleNotebooks "$LAB_USER" "$IG_UUID"
 fi
-
+log "     Username: $LAB_USER     Pass: $LAB_PASSWORD" WARNING
 log "User environment created successfully!" SUCCESS

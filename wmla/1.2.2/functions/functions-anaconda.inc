@@ -407,14 +407,15 @@ createAnacondaInstance() {
 	local ANACONDA_INSTANCE_DEPLOY_HOME=$3
 	local EXECUTION_USER=$4
 	local RG_NAME=$5 # Optional, if not specified Anaconda instance will be deployed on all hosts
+	local CONSUMER_PATH=$6 # Optional, if not specified Anaconda instance will be deployed to /
 	getRestUrls
 	if [ "$RG_NAME" != "" ]
 	then
 		log "Create Anaconda instance $ANACONDA_INSTANCE_NAME using distribution $ANACONDA_SOURCE_DISTRIBUTION_ID on hosts of $RG_NAME Resource Group"
-		local ANACONDA_INSTANCE_CREATION_OUTPUT=`curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Content-Type:application/json" -H "Accept:application/json" -X POST --data '{ "anacondainstancename": "'$ANACONDA_INSTANCE_NAME'", "sourcedistributionid": "'$ANACONDA_SOURCE_DISTRIBUTION_ID'", "consumerpath": "/", "parameters": { "anaconda_rg_param": "'$RG_NAME'", "deploy_home": "'$ANACONDA_INSTANCE_DEPLOY_HOME'", "execution_user": "'$EXECUTION_USER'" }, "environmentvariables": { "PATH": "$PATH:/usr/bin", "IBM_POWERAI_LICENSE_ACCEPT": "yes" } }' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/`
+		local ANACONDA_INSTANCE_CREATION_OUTPUT=`curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Content-Type:application/json" -H "Accept:application/json" -X POST --data '{ "anacondainstancename": "'$ANACONDA_INSTANCE_NAME'", "sourcedistributionid": "'$ANACONDA_SOURCE_DISTRIBUTION_ID'", "consumerpath": "/'$CONSUMER_PATH'", "parameters": { "anaconda_rg_param": "'$RG_NAME'", "deploy_home": "'$ANACONDA_INSTANCE_DEPLOY_HOME'", "execution_user": "'$EXECUTION_USER'" }, "environmentvariables": { "PATH": "$PATH:/usr/bin", "IBM_POWERAI_LICENSE_ACCEPT": "yes" } }' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/`
 	else
 		log "Create Anaconda instance $ANACONDA_INSTANCE_NAME using distribution $ANACONDA_SOURCE_DISTRIBUTION_ID on all hosts"
-		local ANACONDA_INSTANCE_CREATION_OUTPUT=`curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Content-Type:application/json" -H "Accept:application/json" -X POST --data '{ "anacondainstancename": "'$ANACONDA_INSTANCE_NAME'", "sourcedistributionid": "'$ANACONDA_SOURCE_DISTRIBUTION_ID'", "consumerpath": "/", "parameters": { "deploy_home": "'$ANACONDA_INSTANCE_DEPLOY_HOME'", "execution_user": "'$EXECUTION_USER'" }, "environmentvariables": { "PATH": "$PATH:/usr/bin", "IBM_POWERAI_LICENSE_ACCEPT": "yes" } }' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/`
+		local ANACONDA_INSTANCE_CREATION_OUTPUT=`curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Content-Type:application/json" -H "Accept:application/json" -X POST --data '{ "anacondainstancename": "'$ANACONDA_INSTANCE_NAME'", "sourcedistributionid": "'$ANACONDA_SOURCE_DISTRIBUTION_ID'", "consumerpath": "/'$CONSUMER_PATH'", "parameters": { "deploy_home": "'$ANACONDA_INSTANCE_DEPLOY_HOME'", "execution_user": "'$EXECUTION_USER'" }, "environmentvariables": { "PATH": "$PATH:/usr/bin", "IBM_POWERAI_LICENSE_ACCEPT": "yes" } }' ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/`
 	fi
 	export ANACONDA_INSTANCE_UUID=`echo $ANACONDA_INSTANCE_CREATION_OUTPUT | sed -e 's/"//g'`
 	if [ ${#ANACONDA_INSTANCE_UUID} -ne 36 ]
@@ -436,6 +437,7 @@ createAnacondaInstance() {
 		exit 1
 	fi
 	getAnacondaInstanceState $ANACONDA_INSTANCE_UUID
+	LAST_STATE=
 	while [ "$ANACONDA_INSTANCE_STATE" != "READY" ]
 	do
 		if [ "$ANACONDA_INSTANCE_STATE" == "DEPLOY_ERROR" ]
@@ -443,8 +445,12 @@ createAnacondaInstance() {
 			log "Anaconda instance deployment failed (Anaconda instance state: $ANACONDA_INSTANCE_STATE)" ERROR
 			exit 1
 		fi
-		log "Anaconda instance deploying (state: $ANACONDA_INSTANCE_STATE) ..."
+		if [ "$ANACONDA_INSTANCE_STATE"x != "$LAST_STATE"x ]
+		then
+			log "Anaconda instance deploying (state: $ANACONDA_INSTANCE_STATE) ..."
+		fi
 		sleep $STATUS_CHECK_WAITTIME
+		LAST_STATE=$ANACONDA_INSTANCE_STATE
 		getAnacondaInstanceState $ANACONDA_INSTANCE_UUID
 	done
 	log "Anaconda instance deployed successfully" SUCCESS
@@ -663,10 +669,15 @@ waitForCondaEnvironmentDeployed() {
 		local CONDA_ENV_DEPLOYMENT_STARTED=`curl -s -S -k -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -H "Accept:application/json" -X GET ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments/$CONDA_ENV_NAME |$PYTHON_BIN -c $'import sys, json\nd=json.load(sys.stdin)["operations"][0]["activityinfos"][0]\nif "state" in d:\n  print("true")\nelse:\n  print("false")'`
 	done
 	getCondaEnvState $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
+	LAST_STATE=
 	while [ "$CONDA_ENV_DEPLOYED" != "true" ]
 	do
-		log "Conda environment deploying ..."
+		if [ "$CONDA_ENV_DEPLOYED"x != "$LAST_STATE"x ]
+		then
+			log "Conda environment deploying ..."
+		fi
 		sleep $STATUS_CHECK_WAITTIME
+		LAST_STATE=$CONDA_ENV_DEPLOYED
 		getCondaEnvState $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
 	done
 	getCondaEnvExitStatus $ANACONDA_INSTANCE_UUID $CONDA_ENV_NAME
