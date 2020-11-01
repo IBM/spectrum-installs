@@ -33,12 +33,30 @@ then
     exit 1
   fi
 
+  LAB_USER_HOME=`eval echo "~$LAB_USER"`
+
+  log "Defining SYM_USER and SYM_PASSWORD environment variables in $LAB_USER_HOME/.bash_profile"
+  echo "export SYM_USER=$LAB_USER" >> $LAB_USER_HOME/.bash_profile
+  echo "export SYM_PASSWORD=$LAB_PASSWORD" >> $LAB_USER_HOME/.bash_profile
+
   if [[ "$LAB_EXERCISES_TEMPLATES_DIR" != "" && -d "$LAB_EXERCISES_TEMPLATES_DIR" ]]
   then
-    LAB_USER_EXERCISES_DIR=`eval echo "~$LAB_USER"`/exercises
+    LAB_USER_EXERCISES_DIR=$LAB_USER_HOME/exercises
+
+    log "Creating $LAB_USER_EXERCISES_DIR directory"
+    mkdir -p $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
     log "Copying $LAB_EXERCISES_TEMPLATES_DIR content to $LAB_USER_EXERCISES_DIR"
     cp -r $LAB_EXERCISES_TEMPLATES_DIR/* $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
+    log "Changing ownership of directory $LAB_USER_EXERCISES_DIR"
     chown -R $LAB_USER:$CLUSTERADMIN $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
+    log "Replacing LAB_USER in all .xml files"
+    for f in $(find $LAB_USER_EXERCISES_DIR -name "*.xml")
+    do
+      sed -i 's/##LAB_USER##/'$LAB_USER'/g' $f
+    done
   fi
 fi
 
@@ -46,9 +64,9 @@ log "Creating EGO user $LAB_USER"
 createUser $LAB_USER $LAB_PASSWORD
 
 log "Creating consumers"
-createConsumer /$LAB_USER $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
-createConsumer /$LAB_USER/$LAB_USER-app1 $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
-createConsumer /$LAB_USER/$LAB_USER-app2 $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
+createConsumer /$LAB_USER $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
+createConsumer /$LAB_USER/$LAB_USER-app1 $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
+createConsumer /$LAB_USER/$LAB_USER-app2 $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
 
 log "Creating sample applications"
 createApplication $DEMO_APP_PROFILE_TEMPLATE $LAB_USER-app1 /$LAB_USER/$LAB_USER-app1 $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME
@@ -72,4 +90,4 @@ log "Assigning Consumer user role to $LAB_USER for parent consumer ${DEMO_VAR_CO
 assignConsumerUserRole $LAB_USER ${DEMO_VAR_CONSUMER_PATH%/*}
 
 
-log "Lab environment created successfully! ($LAB_USER / $LAB_PASSWORD)"
+log "Lab environment created successfully! ($LAB_USER / $LAB_PASSWORD)" SUCCESS

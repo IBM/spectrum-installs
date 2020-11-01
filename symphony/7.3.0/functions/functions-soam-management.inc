@@ -60,18 +60,18 @@ getApplicationState() {
   local CODE=$?
   if [ $CODE -eq 0 ]
   then
-    local APP_STATE=enabled
+    local APP_STATE_L=enabled
   else
     soamview app $APP_NAME 2>&1 | grep "disabled" >/dev/null 2>&1
     local CODE=$?
     if [ $CODE -eq 0 ]
     then
-      local APP_STATE=disabled
+      local APP_STATE_L=disabled
     else
-      local APP_STATE=unknown
+      local APP_STATE_L=unknown
     fi
   fi
-  eval $__resultvar="'$APP_STATE'"
+  eval $__resultvar="'$APP_STATE_L'"
 }
 
 getApplicationProfile() {

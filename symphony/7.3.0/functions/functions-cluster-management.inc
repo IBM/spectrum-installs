@@ -165,7 +165,7 @@ findAvailableUsername() {
   authenticate
   while true
   do
-    egosh user view $USERNAME 2>&1 | grep "ACCOUNT" >/dev/null 2>&1
+    egosh user list -ll | grep \"$USERNAME\" > /dev/null 2>&1
     if [ $? -ne 0 ]
     then
       break
@@ -175,6 +175,20 @@ findAvailableUsername() {
     fi
   done
   eval $__resultvar="'$USERNAME'"
+}
+
+getUserExistence(){
+  local USERNAME=$1
+  local __resultvar=$2
+  authenticate
+  egosh user list -ll | grep \"$USERNAME\" > /dev/null 2>&1
+  if [ $? -eq 0 ]
+  then
+    USER_EXISTS_L=true
+  else
+    USER_EXISTS_L=false
+  fi
+  eval $__resultvar="'$USER_EXISTS_L'"
 }
 
 deleteUser() {
