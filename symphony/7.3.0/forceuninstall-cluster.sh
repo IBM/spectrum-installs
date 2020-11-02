@@ -70,7 +70,7 @@ then
       COMPUTEHOSTS_FILE_PSSH=$COMPUTEHOSTS_FILE
     fi
     log "Uninstalling compute hosts using pssh ($PSSH_NBHOSTS_IN_PARALLEL hosts in parallel)"
-    pssh -h $COMPUTEHOSTS_FILE -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT "`dirname "$(readlink -f "$0")"`/forceuninstall-host.sh" 2>&1 | tee -a $LOG_FILE
+    pssh -h $COMPUTEHOSTS_FILE_PSSH -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT "`dirname "$(readlink -f "$0")"`/forceuninstall-host.sh" 2>&1 | tee -a $LOG_FILE
     if [ "$COMPUTEHOSTS_FILE_TMP" == "true" ]
     then
       \rm -f $COMPUTEHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
