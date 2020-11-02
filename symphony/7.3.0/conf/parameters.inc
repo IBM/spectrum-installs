@@ -68,6 +68,7 @@ export STATUS_CHECK_WAITTIME=5 # Duration in seconds to wait before 2 check of s
 export EGO_SHUTDOWN_WAITTIME=15 # Duration in seconds to wait after stopping or restarting EGO.
 
 ### INSTALLATION
+export SSH_PORT=22 # Optional, specify the port for SSH connection. Only used by install-cluster.sh and create-lab-environment.sh if LAB_CREATE_OS_USER=enabled.
 export PSSH_NBHOSTS_IN_PARALLEL=10 # Specify the number of management and compute hosts to install in parallel, only used by install-cluster.sh if pssh is installed and this parameter is greater than 1.
 export PSSH_TIMEOUT=0 # Timeout in seconds for execution of the install on each host when using pssh. 0 means no timeout. Only used by install-cluster.sh if pssh is installed and parameter PSSH_NBHOSTS_IN_PARALLEL is greater than 1.
 export INSTALL_FROM_RPMS=disabled # Specify enabled or disabled. If enabled, the script will extract rpms from Symphony bin installer and install from rpms with "--ignoresize" option (useful for Spectrum Scale shared install if you hit an error related to diskspace check).

@@ -103,8 +103,23 @@ if [ $? -eq 0 -a $PSSH_NBHOSTS_IN_PARALLEL -gt 1 ]
 then
   if [ `wc -l $MANAGEMENTHOSTS_FILE | awk '{print $1}'` -gt 0 ]
   then
+    if [[ "$SSH_PORT" != "" && "$SSH_PORT" != "22" ]]
+    then
+      MANAGEMENTHOSTS_FILE_TMP=true
+      log "Creating temporary management hosts file to use with pssh, as SSH port is not the default ($SSH_PORT)"
+      MANAGEMENTHOSTS_FILE_PSSH=/tmp/management-hosts-pssh_`date +%s%N | md5sum | head -c8`.txt
+      \cp -f $MANAGEMENTHOSTS_FILE $MANAGEMENTHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+      sed -e 's/$/:'$SSH_PORT'/' -i $MANAGEMENTHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+    else
+      MANAGEMENTHOSTS_FILE_TMP=false
+      MANAGEMENTHOSTS_FILE_PSSH=$MANAGEMENTHOSTS_FILE
+    fi
     log "Installing management hosts using pssh ($PSSH_NBHOSTS_IN_PARALLEL hosts in parallel)"
-    pssh -h $MANAGEMENTHOSTS_FILE -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT $SCRIPT_INSTALL_MANAGEMENT 2>&1 | tee -a $LOG_FILE
+    pssh -h $MANAGEMENTHOSTS_FILE_PSSH -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT $SCRIPT_INSTALL_MANAGEMENT 2>&1 | tee -a $LOG_FILE
+    if [ "$MANAGEMENTHOSTS_FILE_TMP" == "true" ]
+    then
+      \rm -f $MANAGEMENTHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+    fi
     log "Restart EGO on master host to take into account new management hosts"
     runCommandLocalOrRemote $MASTERHOST $SCRIPT_RESTART_MASTER "false"
     log "Wait $EGO_SHUTDOWN_WAITTIME seconds to make sure all EGO processes restarted"
@@ -123,8 +138,23 @@ then
   fi
   if [ `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]
   then
+    if [[ "$SSH_PORT" != "" && "$SSH_PORT" != "22" ]]
+    then
+      COMPUTEHOSTS_FILE_TMP=true
+      log "Creating temporary compute hosts file to use with pssh, as SSH port is not the default ($SSH_PORT)"
+      COMPUTEHOSTS_FILE_PSSH=/tmp/compute-hosts-pssh_`date +%s%N | md5sum | head -c8`.txt
+      \cp -f $COMPUTEHOSTS_FILE $COMPUTEHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+      sed -e 's/$/:'$SSH_PORT'/' -i $COMPUTEHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+    else
+      COMPUTEHOSTS_FILE_TMP=false
+      COMPUTEHOSTS_FILE_PSSH=$COMPUTEHOSTS_FILE
+    fi
     log "Installing compute hosts using pssh ($PSSH_NBHOSTS_IN_PARALLEL hosts in parallel)"
-    pssh -h $COMPUTEHOSTS_FILE -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT $SCRIPT_INSTALL_COMPUTE 2>&1 | tee -a $LOG_FILE
+    pssh -h $COMPUTEHOSTS_FILE_PSSH -p $PSSH_NBHOSTS_IN_PARALLEL -t $PSSH_TIMEOUT $SCRIPT_INSTALL_COMPUTE 2>&1 | tee -a $LOG_FILE
+    if [ "$COMPUTEHOSTS_FILE_TMP" == "true" ]
+    then
+      \rm -f $COMPUTEHOSTS_FILE_PSSH 2>&1 | tee -a $LOG_FILE
+    fi
   else
     log "No compute hosts to install in $COMPUTEHOSTS_FILE"
   fi
