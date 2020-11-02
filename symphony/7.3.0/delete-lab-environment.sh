@@ -29,14 +29,24 @@ log "Wait for cluster to start and SD service to be started"
 waitForClusterUp
 waitForEgoServiceStarted SD
 
-for APP_NAME in $LAB_USER-app1 $LAB_USER-app2 $LAB_USER-PiApp
+log "Deleting all applications under consumer /$LAB_USER"
+getApplicationsList /$LAB_USER LAB_USER_APPS
+for LAB_USER_APP in $LAB_USER_APPS
 do
-  getApplicationState $APP_NAME APP_STATE
-  if [ "$APP_STATE" != "unknown" ]
-  then
-    log "Deleting application $APP_NAME"
-    deleteApplication $APP_NAME
-  fi
+  log "Deleting application under consumer $LAB_USER_APP"
+  deleteApplication $LAB_USER_APP
+done
+
+log "Deleting all packages under consumer /$LAB_USER"
+getConsumersList /$LAB_USER LAB_USER_CONSUMERS
+for LAB_USER_CONSUMER in $LAB_USER_CONSUMERS
+do
+  getPackagesList $LAB_USER_CONSUMER LAB_USER_PACKAGES
+  for LAB_USER_PACKAGE in $LAB_USER_PACKAGES
+  do
+    log "Deleting packge $LAB_USER_PACKAGE in consumer $LAB_USER_CONSUMER"
+    deletePackage $LAB_USER_CONSUMER $LAB_USER_PACKAGE
+  done
 done
 
 log "Deleting consumer /$LAB_USER"

@@ -254,6 +254,14 @@ deleteConsumer() {
   fi
 }
 
+getConsumersList() {
+  local CONSUMER_PATH=$1
+  local __resultvar=$2
+  authenticate
+  local CONSUMERS_L=`egosh consumer list -l | grep " $CONSUMER_PATH" | awk '{print $2}'`
+  eval $__resultvar="'$CONSUMERS_L'"
+}
+
 assignConsumerRole() {
   local USER=$1
   local ROLE=$2

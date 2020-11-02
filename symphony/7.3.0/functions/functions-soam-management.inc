@@ -88,6 +88,14 @@ getApplicationProfile() {
   eval $__resultvar="'$APP_PROFILE_PATH'"
 }
 
+getApplicationsList() {
+  local CONSUMER_PATH=$1
+  local __resultvar=$2
+  authenticate
+  local APPS_L=`soamview app | grep "$CONSUMER_PATH" | awk '{print $1}'`
+  eval $__resultvar="'$APPS_L'"
+}
+
 updateApplication() {
   local APP_PROFILE=$1
   authenticate
@@ -99,4 +107,19 @@ updateApplication() {
   else
     log "Failed to update application using application profile $APP_PROFILE (error code: $CODE)" WARNING
   fi
+}
+
+getPackagesList() {
+  local CONSUMER_PATH=$1
+  local __resultvar=$2
+  authenticate
+  local PACKAGES_L=`soamdeploy view -c $CONSUMER_PATH | sed "1 d" | awk '{print $1}'`
+  eval $__resultvar="'$PACKAGES_L'"
+}
+
+deletePackage() {
+  local CONSUMER_PATH=$1
+  local PACKAGE_NAME=$2
+  authenticate
+  soamdeploy remove $PACKAGE_NAME -c $CONSUMER_PATH -f 2>&1 | tee -a $LOG_FILE
 }
