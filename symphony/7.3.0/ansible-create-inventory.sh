@@ -29,6 +29,10 @@ echo "install_type=\"$INSTALL_TYPE\"" >> $ANSIBLE_INVENTORY_FILE
 echo "install_multihead=\"$INSTALL_MULTI_HEAD\"" >> $ANSIBLE_INVENTORY_FILE
 echo "update_ssl=\"$SSL\"" >> $ANSIBLE_INVENTORY_FILE
 echo "create_demo_environment=\"$CLUSTERINSTALL_CREATE_DEMO_ENVIRONMENT\"" >> $ANSIBLE_INVENTORY_FILE
+if [[ "$SSH_PORT" != "" && "$SSH_PORT" != "22" ]]
+then
+  echo "ansible_port=\"$SSH_PORT\"" >> $ANSIBLE_INVENTORY_FILE
+fi
 echo "" >> $ANSIBLE_INVENTORY_FILE
 
 log "Adding masterhost group"
