@@ -4,7 +4,8 @@ channels:
   - defaults
 dependencies:
   - python=3.6
-  - pyyaml
+  - powerai==1.7.0
+  - keras==2.3.1
   - conda
   - jupyterlab==0.35.4
   - notebook==6.0.3
@@ -14,8 +15,3 @@ dependencies:
   - pandas
   - pynacl
   - bcrypt
-  - matplotlib
-  - scipy
-  - scikit-learn
-  - seaborn
-  - pytorch-cpu

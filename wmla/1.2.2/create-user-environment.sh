@@ -1,12 +1,8 @@
 #!/bin/sh
 
-#############################
-# WARNING: PLEASE READ README.md FIRST
-#############################
-
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
-source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 source `dirname "$(readlink -f "$0")"`/conf/lab-environment.inc
+source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/create-user-environment_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
@@ -25,10 +21,6 @@ log "Finding available user id"
 findAvailableUsername $LAB_USER_BASE LAB_USER
 log "Creating user $LAB_USER : $LAB_PASSWORD"
 createUser $LAB_USER $LAB_PASSWORD
-
-override=`dirname "$(readlink -f "$0")"`/conf/extra-user-environment.inc
-[[ -f $override ]] && log "Detected override $override, applying" WARNING && source $override
-
 
 if [ "$RG_GPU_NAME" != "" ]
 then
@@ -50,6 +42,9 @@ if [ "$IG_ANACONDA_DISTRIBUTION_ID" == "" ]
 then
 	IG_ANACONDA_DISTRIBUTION_ID=$ANACONDA_DISTRIBUTION_ID_DEFAULT
 fi
+
+export IG_ANACONDA_INSTANCE_NAME=Anaconda-$LAB_USER
+export IG_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$IG_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for Instance Groups will be deployed.
 log "Create Anaconda instance using distribution $IG_ANACONDA_DISTRIBUTION_ID"
 createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAME" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME" "$CLUSTERADMIN" "$RG_CPU_NAME" "${LAB_USER}"
 
@@ -81,8 +76,9 @@ else
   createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK243_CONDA_ENV_NAME
 fi
 
+IG_DLI_NAME=${IG_DLI_NAME}-${LAB_USER}
 log "Creating consumers for instance group $IG_DLI_NAME"
-createIgConsumers /${LAB_USER}/${IG_DLI_NAME} $IG_DLI_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_DLI_NAME} $IG_DLI_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
 updateResourcePlanIgConsumers $IG_DLI_NAME
 
 log "Create Instance Group $IG_DLI_NAME"
@@ -93,8 +89,9 @@ else
   createIgDli "$IG_DLI_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLI_NAME}" "$IG_DLI_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$DLI_SHARED_FS/distrib_workload_config" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
 fi
 
+IG_DLIEDT_NAME=${IG_DLIEDT_NAME}-${LAB_USER}
 log "Creating consumers for instance group $IG_DLIEDT_NAME"
-createIgConsumers /${LAB_USER}/${IG_DLIEDT_NAME} $IG_DLIEDT_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_DLIEDT_NAME} $IG_DLIEDT_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
 updateResourcePlanIgConsumers $IG_DLIEDT_NAME
 
 log "Create Instance Group $IG_DLIEDT_NAME"
@@ -105,8 +102,9 @@ else
   createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLIEDT_NAME}" "$IG_DLIEDT_NAME" "$CLUSTERADMIN" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
 fi
 
+IG_SPARK243_NAME=${IG_SPARK243_NAME}-${LAB_USER}
 log "Creating consumers for instance group $IG_SPARK243_NAME"
-createIgConsumers /${LAB_USER}/${IG_SPARK243_NAME} $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $IG_USER_NAME
+createIgConsumers /${LAB_USER}/${IG_SPARK243_NAME} $IG_SPARK243_NAME $CLUSTERADMIN $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
 updateResourcePlanIgConsumers $IG_SPARK243_NAME
 
 log "Create Instance Group $IG_SPARK243_NAME"
