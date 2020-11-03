@@ -41,7 +41,7 @@ Official documentation of IBM Spectrum Symphony is available [here](https://www.
 * If the Ansible playbook is used to install the cluster:
   * Ansible must be installed on the host where the playbook will be executed.
   * The user used to execute the playbook must have password-less ssh access to all hosts of the cluster.
-  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation. 
+  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation.
 
 ## 4. Usage
 
@@ -186,7 +186,7 @@ To create a lab environment:
 * EGO_ADMIN_USERNAME
 * EGO_ADMIN_PASSWORD
 
-2. Execute the following script:
+2. Execute the following script on one of the server of the cluster:
 ```bash
 ./create-lab-environment.sh
 ```
@@ -197,10 +197,19 @@ To delete a lab environment:
 * EGO_ADMIN_USERNAME
 * EGO_ADMIN_PASSWORD
 
-2. Execute the following script, with the username of the lab environment to delete as argument:
+2. Execute the following script on one of the server of the cluster, with the username of the lab environment to delete as argument:
 ```bash
 ./delete-lab-environment.sh <USERNAME>
 ```
+
+#### 4.5.3. Advanced configuration
+In order to provide additional exercises for the lab environment, *create-lab-environment.sh* script can:
+* create a OS user (username will be the same than the Symphony username) on all hosts of the cluster (in that case consumers will be created with the OS user as execution user)
+* copy a template directory to the home directory of the user (only on the server where the script is executed)
+
+To enable this advanced configuration, edit following parameters in *conf/lab-environment.inc*:
+* LAB_CREATE_OS_USER
+* LAB_EXERCISES_TEMPLATES_DIR
 
 ## 5. Description of files
 * __README.md__: Description of the scripts and how to use.

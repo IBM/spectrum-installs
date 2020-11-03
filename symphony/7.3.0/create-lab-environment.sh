@@ -17,38 +17,87 @@ findAvailableUsername $LAB_USER_BASE LAB_USER
 
 if [ "$LAB_CREATE_OS_USER" == "enabled" ]
 then
-  if id "$LAB_USER" &>/dev/null; then
-    log "Cannot create OS user $LAB_USER, it already exists" ERROR
+  [[ ! -d $SCRIPTS_TMP_DIR ]] && mkdir -p $SCRIPTS_TMP_DIR
+  SCRIPT_CREATE_OS_USER=$SCRIPTS_TMP_DIR/lab-create-os-user.sh
+  echo '#!/bin/sh
+if id "'$LAB_USER'" &>/dev/null; then
+  echo "Cannot create OS user '$LAB_USER', it already exists"
+else
+  useradd '$LAB_USER' -g '$CLUSTERADMIN'
+  CODE=$?
+  if [ $CODE -eq 0 ]; then
+    echo "User '$LAB_USER' created successfully"
+    exit 0
+  else
+    echo "Failed to create user '$LAB_USER' (error code: $CODE)"
     exit 1
+  fi
+fi' > $SCRIPT_CREATE_OS_USER
+  chmod +x $SCRIPT_CREATE_OS_USER 2>&1 | tee -a $LOG_FILE
+
+  log "Creating OS user $LAB_USER on master $MASTERHOST"
+  runCommandLocalOrRemote $MASTERHOST $SCRIPT_CREATE_OS_USER "false"
+
+  if [[ "$MANAGEMENTHOSTS_FILE" != "" && -f $MANAGEMENTHOSTS_FILE && `wc -l $MANAGEMENTHOSTS_FILE | awk '{print $1}'` -gt 0 ]]
+  then
+    for MANAGEMENT_HOST in `cat $MANAGEMENTHOSTS_FILE`
+    do
+      log "Creating OS user $LAB_USER on management host $MANAGEMENT_HOST"
+      runCommandLocalOrRemote $MANAGEMENT_HOST $SCRIPT_CREATE_OS_USER "false"
+    done
   fi
 
-  log "Creating OS user $LAB_USER"
-  useradd $LAB_USER -g $CLUSTERADMIN 2>&1 | tee -a $LOG_FILE
-  CODE=${PIPESTATUS[0]}
-  if [ $CODE -eq 0 ]
+  if [[ "$COMPUTEHOSTS_FILE" != "" && -f $COMPUTEHOSTS_FILE && `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]]
   then
-    log "OS user $LAB_USER created successfully" SUCCESS
-  else
-    log "Failed to create OS user $LAB_USER (exit code: $CODE)" ERROR
-    exit 1
+    for COMPUTE_HOST in `cat $COMPUTEHOSTS_FILE`
+    do
+      log "Creating OS user $LAB_USER on compute host $COMPUTE_HOST"
+      runCommandLocalOrRemote $COMPUTE_HOST $SCRIPT_CREATE_OS_USER "false"
+    done
   fi
+
+  LAB_USER_HOME=`eval echo "~$LAB_USER"`
+
+  log "Defining SYM_USER and SYM_PASSWORD environment variables in $LAB_USER_HOME/.bash_profile"
+  echo "export SYM_USER=$LAB_USER" >> $LAB_USER_HOME/.bash_profile
+  echo "export SYM_PASSWORD=$LAB_PASSWORD" >> $LAB_USER_HOME/.bash_profile
 
   if [[ "$LAB_EXERCISES_TEMPLATES_DIR" != "" && -d "$LAB_EXERCISES_TEMPLATES_DIR" ]]
   then
-    LAB_USER_EXERCISES_DIR=`eval echo "~$LAB_USER"`/exercises
+    LAB_EXERCISES_TEMPLATES_DIR_NAME=`basename $LAB_EXERCISES_TEMPLATES_DIR`
+    LAB_USER_EXERCISES_DIR=$LAB_USER_HOME/$LAB_EXERCISES_TEMPLATES_DIR_NAME
+
+    log "Creating $LAB_USER_EXERCISES_DIR directory"
+    mkdir -p $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
     log "Copying $LAB_EXERCISES_TEMPLATES_DIR content to $LAB_USER_EXERCISES_DIR"
     cp -r $LAB_EXERCISES_TEMPLATES_DIR/* $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
+    log "Changing ownership of directory $LAB_USER_EXERCISES_DIR"
     chown -R $LAB_USER:$CLUSTERADMIN $LAB_USER_EXERCISES_DIR 2>&1 | tee -a $LOG_FILE
+
+    log "Replacing LAB_USER in all .xml files"
+    for f in $(find $LAB_USER_EXERCISES_DIR -name "*.xml")
+    do
+      sed -i 's/##LAB_USER##/'$LAB_USER'/g' $f
+    done
   fi
 fi
 
 log "Creating EGO user $LAB_USER"
 createUser $LAB_USER $LAB_PASSWORD
 
-log "Creating consumers"
-createConsumer /$LAB_USER $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
-createConsumer /$LAB_USER/$LAB_USER-app1 $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
-createConsumer /$LAB_USER/$LAB_USER-app2 $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_USER
+if [ "$LAB_CREATE_OS_USER" == "enabled" ]
+then
+  LAB_EXEC_USER=$LAB_USER
+else
+  LAB_EXEC_USER=$CLUSTERADMIN
+fi
+
+log "Creating consumers with execution user $LAB_EXEC_USER"
+createConsumer /$LAB_USER $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_EXEC_USER
+createConsumer /$LAB_USER/$LAB_USER-app1 $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_EXEC_USER
+createConsumer /$LAB_USER/$LAB_USER-app2 $LAB_USER $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME $LAB_EXEC_USER
 
 log "Creating sample applications"
 createApplication $DEMO_APP_PROFILE_TEMPLATE $LAB_USER-app1 /$LAB_USER/$LAB_USER-app1 $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME
@@ -72,4 +121,4 @@ log "Assigning Consumer user role to $LAB_USER for parent consumer ${DEMO_VAR_CO
 assignConsumerUserRole $LAB_USER ${DEMO_VAR_CONSUMER_PATH%/*}
 
 
-log "Lab environment created successfully! ($LAB_USER / $LAB_PASSWORD)"
+log "Lab environment created successfully! ($LAB_USER / $LAB_PASSWORD)" SUCCESS

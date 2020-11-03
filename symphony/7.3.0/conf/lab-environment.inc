@@ -8,9 +8,9 @@ export EGO_ADMIN_PASSWORD=Admin # Password of the ADMIN_USER account
 ### USER SETTINGS
 export LAB_USER_BASE=user # Base user name which will have access (consumer admin role) to the applications created. The user name will be <LAB_USER_BASE>X, X being the first available number not already used
 export LAB_PASSWORD=`date +%s%N | md5sum | head -c8` # Password for the user created
-export LAB_CREATE_OS_USER=enabled # Specify enabled or disabled. If enabled, an OS user will be created
+export LAB_CREATE_OS_USER=disabled # Specify enabled or disabled. If enabled, an OS user will be created
 
-export LAB_EXERCISES_TEMPLATES_DIR=/opt/nfs/spectrum-share/symphony/exercises # If specified and LAB_CREATE_OS_USER=enabled, this directory will be copied inside the OS user home directory
+export LAB_EXERCISES_TEMPLATES_DIR= # If specified and LAB_CREATE_OS_USER=enabled, this directory will be copied inside the OS user home directory, and ##LAB_USER## and ##LAB_PASSWORD## strings will be replaced with the corresponding values in all .sh files
 
 ### DEMO SETTINGS
 export DEMO_APP_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/app.xml # Application profile template to use to create applications.

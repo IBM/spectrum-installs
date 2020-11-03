@@ -60,18 +60,18 @@ getApplicationState() {
   local CODE=$?
   if [ $CODE -eq 0 ]
   then
-    local APP_STATE=enabled
+    local APP_STATE_L=enabled
   else
     soamview app $APP_NAME 2>&1 | grep "disabled" >/dev/null 2>&1
     local CODE=$?
     if [ $CODE -eq 0 ]
     then
-      local APP_STATE=disabled
+      local APP_STATE_L=disabled
     else
-      local APP_STATE=unknown
+      local APP_STATE_L=unknown
     fi
   fi
-  eval $__resultvar="'$APP_STATE'"
+  eval $__resultvar="'$APP_STATE_L'"
 }
 
 getApplicationProfile() {
@@ -88,6 +88,14 @@ getApplicationProfile() {
   eval $__resultvar="'$APP_PROFILE_PATH'"
 }
 
+getApplicationsList() {
+  local CONSUMER_PATH=$1
+  local __resultvar=$2
+  authenticate
+  local APPS_L=`soamview app | grep "$CONSUMER_PATH" | awk '{print $1}'`
+  eval $__resultvar="'$APPS_L'"
+}
+
 updateApplication() {
   local APP_PROFILE=$1
   authenticate
@@ -99,4 +107,19 @@ updateApplication() {
   else
     log "Failed to update application using application profile $APP_PROFILE (error code: $CODE)" WARNING
   fi
+}
+
+getPackagesList() {
+  local CONSUMER_PATH=$1
+  local __resultvar=$2
+  authenticate
+  local PACKAGES_L=`soamdeploy view -c $CONSUMER_PATH | sed "1 d" | awk '{print $1}'`
+  eval $__resultvar="'$PACKAGES_L'"
+}
+
+deletePackage() {
+  local CONSUMER_PATH=$1
+  local PACKAGE_NAME=$2
+  authenticate
+  soamdeploy remove $PACKAGE_NAME -c $CONSUMER_PATH -f 2>&1 | tee -a $LOG_FILE
 }
