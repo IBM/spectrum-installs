@@ -105,9 +105,6 @@ export DLI_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/dli/dli_entitlement.dat #
 ### IFIXES
 export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546962.
 
-### NOTEBOOKS
-export NOTEBOOK_SOURCE_DIR="${BASE_SHARED_DIR}/WMLA-helpers/jupyter-notebooks" # Optional, if specified and exists, this directory content will be copied to the base user notebook directory when creating a notebook instance for user and invoking createSampleNotebooks() .  It should contain assets such as .ipynb and datasets.
-
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES
 export CACHE_DIR=`dirname "$(readlink -f "$0")"`/cache # Base directory that these scripts will use to create temporary files.

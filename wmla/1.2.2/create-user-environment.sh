@@ -127,5 +127,32 @@ then
   getIgUUID $IG_SPARK243_NAME
   createSampleNotebooks "$LAB_USER" "$IG_UUID"
 fi
+
+if [ -d $DLI_DATASET_SOURCE_DIR ]
+then
+  getRestUrlsDLPD
+  DATASET_NAME=cifar10-${LAB_USER}-$(date +%s)
+  getIgUUID "$IG_DLI_NAME"
+ 
+  log "Create new dataset $DATASET_NAME from input location $DLI_DATASET_SOURCE_DIR on instance group $IG_UUID"
+  curl -s -S -k -u ${LAB_USER}:${LAB_PASSWORD} -H 'Accept:application/json' -H 'Content-Type:application/json' --data '{"name":"'$DATASET_NAME'","dbbackend":"TFRecords","imagedetail":{"isusingtext":false,"imagetype":"Color","resizetransformation":"Squash","splitalgorithm":"hold-out","trainimagepath":"'$DLI_DATASET_SOURCE_DIR'","valpercentage":10,"testpercentage":20,"traintextpath":null,"valtextpath":null,"testtextpath":null,"labeltextpath":null,"height":null,"width":null},"sigid":"'$IG_UUID'","datasourcetype":"IMAGEFORCLASSIFICATION","byclass":true}' ${DLPD_REST_BASE_URL}deeplearning/v1/datasets
+
+  IMPORT_DATASET_STATUS=
+  while [ "$IMPORT_DATASET_STATUS" != "FINISHED" ];
+  do
+    IMPORT_DATASET_STATUS=$(curl -s -S -k -u ${LAB_USER}:${LAB_PASSWORD} -H 'Accept:application/json' -H 'Content-Type:application/json' ${DLPD_REST_BASE_URL}deeplearning/v1/datasets/${DATASET_NAME} | jq -r '.status' )
+    log "Importing dataset status... $IMPORT_DATASET_STATUS"
+    sleep 5
+  done
+fi
+
+if [ -d $DLI_MODEL_SOURCE_DIR ]
+then
+  getRestUrlsDLPD
+  MODEL_TEMPLATE_NAME=resnet-${LAB_USER}
+  log "Adding model template"
+  curl -s -S -k -u ${LAB_USER}:${LAB_PASSWORD} -H 'Accept:application/json' -H 'Content-Type:application/json' --data '{"name":"'$MODEL_TEMPLATE_NAME'","framework":"PyTorch","path":"'$DLI_MODEL_SOURCE_DIR'","description":"resnet pytorch base model"}' ${DLPD_REST_BASE_URL}deeplearning/v1/modeltemplates  
+fi
+
 log "     Username: $LAB_USER     Pass: $LAB_PASSWORD" WARNING
 log "User environment created successfully!" SUCCESS
