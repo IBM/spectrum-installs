@@ -118,6 +118,6 @@
   become: yes
 
   tasks:
-  - name: execute create-user-environment.sh
-    command: "{{ scripts_dir }}/create-user-environment.sh"
+  - name: execute create-lab-environment.sh
+    command: "{{ scripts_dir }}/create-lab-environment.sh"
     when: create_user_environment is defined and create_user_environment == "enabled"

@@ -220,7 +220,7 @@ ansible-playbook ansible-install-cluster.yaml -i ansible-inventory.ini
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egosh ego restart -f"
 ```
-5. To create User environment, execute *create-user-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
+5. To create User environment, execute *create-lab-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from WMLA GUI or with this CLI:
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f && egosh ego restart -f"
@@ -280,7 +280,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 * __install-cluster.sh__: Cluster installation script (Install all the components on all hosts and create Instance Groups).
 * __postinstall-host.sh__: Post-installation script (Define rc init script for WMLA and EGO sudoers on current host).
 * __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
-* __create-user-environment.sh__: Create 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 for DLI with EDT and 1 for DLI without EDT).
+* __create-lab-environment.sh__: Create 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 for DLI with EDT and 1 for DLI without EDT).
 * __prepare-local-conda-channel.sh__: Script to download Anaconda distribution and create a local conda channel.
 * __prepare-airgap-install.sh__: Script to download Anaconda distribution and create conda environments.
 * __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).

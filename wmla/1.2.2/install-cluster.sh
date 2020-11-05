@@ -205,7 +205,7 @@ then
   fi
 
   log "Creating user environment"
-  runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-user-environment.sh" "false"
+  runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-lab-environment.sh" "false"
 fi
 
 log "Get WEBGUI URL"
