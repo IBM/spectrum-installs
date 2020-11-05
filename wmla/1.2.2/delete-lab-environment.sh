@@ -94,5 +94,45 @@ deleteConsumer $LAB_USER
 
 log "Deleting user $LAB_USER"
 deleteUser $LAB_USER
+
+if [ "$LAB_CREATE_OS_USER" == "enabled" ]
+then
+  [[ ! -d $SCRIPTS_TMP_DIR ]] && mkdir -p $SCRIPTS_TMP_DIR
+  SCRIPT_DELETE_OS_USER=$SCRIPTS_TMP_DIR/lab-delete-os-user.sh
+  echo '#!/bin/sh
+if id "'$LAB_USER'" &>/dev/null; then
+  userdel -r '$LAB_USER'
+  CODE=$?
+  if [ $CODE -eq 0 ]; then
+    echo "User '$LAB_USER' deleted successfully"
+    exit 0
+  else
+    echo "Failed to delete user '$LAB_USER' (error code: $CODE)"
+    exit 1
+  fi
+fi' > $SCRIPT_DELETE_OS_USER
+  chmod +x $SCRIPT_DELETE_OS_USER 2>&1 | tee -a $LOG_FILE
+
+  log "Deleting OS user $LAB_USER on master $MASTERHOST"
+  runCommandLocalOrRemote $MASTERHOST $SCRIPT_DELETE_OS_USER "false"
+
+  if [[ "$MANAGEMENTHOSTS_FILE" != "" && -f $MANAGEMENTHOSTS_FILE && `wc -l $MANAGEMENTHOSTS_FILE | awk '{print $1}'` -gt 0 ]]
+  then
+    for MANAGEMENT_HOST in `cat $MANAGEMENTHOSTS_FILE`
+    do
+      log "Deleting OS user $LAB_USER on management host $MANAGEMENT_HOST"
+      runCommandLocalOrRemote $MANAGEMENT_HOST $SCRIPT_DELETE_OS_USER "false"
+    done
+  fi
+
+  if [[ "$COMPUTEHOSTS_FILE" != "" && -f $COMPUTEHOSTS_FILE && `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]]
+  then
+    for COMPUTE_HOST in `cat $COMPUTEHOSTS_FILE`
+    do
+      log "Deleting OS user $LAB_USER on compute host $COMPUTE_HOST"
+      runCommandLocalOrRemote $COMPUTE_HOST $SCRIPT_DELETE_OS_USER "false"
+    done
+  fi
+fi
  
 log "Lab environment of user $LAB_USER deleted successfully!" SUCCESS
