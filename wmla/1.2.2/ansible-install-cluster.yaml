@@ -113,11 +113,11 @@
      seconds: 15
     when: "'mastercandidatehosts' in groups and groups['mastercandidatehosts'] | length >= 1"
 
-- name: Create user environment
+- name: Create lab environment
   hosts: masterhost
   become: yes
 
   tasks:
   - name: execute create-lab-environment.sh
     command: "{{ scripts_dir }}/create-lab-environment.sh"
-    when: create_user_environment is defined and create_user_environment == "enabled"
+    when: create_lab_environment is defined and create_lab_environment == "enabled"

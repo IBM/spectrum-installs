@@ -9,6 +9,8 @@ source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/install-cluster_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
+checkPython
+
 log "Starting cluster installation"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1
@@ -196,15 +198,15 @@ else
   fi
 fi
 
-if [ "$CLUSTERINSTALL_CREATE_USER_ENVIRONMENT" == "enabled" ]
+if [ "$CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT" == "enabled" ]
 then
   if [ `wc -l $MANAGEMENTHOSTS_FILE | awk '{print $1}'` -gt 0 ] || [ `wc -l $COMPUTEHOSTS_FILE | awk '{print $1}'` -gt 0 ]
   then
-    log "Wait $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT seconds for hosts to to be up before creating user environment"
-    sleep $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT
+    log "Wait $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_LAB_ENVIRONMENT seconds for hosts to to be up before creating lab environment"
+    sleep $CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_LAB_ENVIRONMENT
   fi
 
-  log "Creating user environment"
+  log "Creating lab environment"
   runCommandLocalOrRemote $MASTERHOST "`dirname "$(readlink -f "$0")"`/create-lab-environment.sh" "false"
 fi
 

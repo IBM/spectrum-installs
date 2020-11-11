@@ -9,6 +9,8 @@ source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/forceuninstall-host_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
+checkPython
+
 log "Starting force uninstall host script"
 
 [[ ! "$USER" == "root" ]] && log "Current user is not root, aborting" ERROR && exit 1

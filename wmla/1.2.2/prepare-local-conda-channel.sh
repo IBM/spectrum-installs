@@ -5,6 +5,7 @@
 #############################
 
 source `dirname "$(readlink -f "$0")"`/conf/parameters.inc
+source `dirname "$(readlink -f "$0")"`/conf/lab-environment.inc
 source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/prepare-local-conda-channel_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
@@ -28,11 +29,11 @@ fi
 log "The following files were prepared and need to be copied in the scripts folder (following the same structure) which will be used to install the cluster:"
 if [ "$INFO_MESSAGE_1" != "" ]
 then
-  log "$INFO_MESSAGE_1"
+  log "$INFO_MESSAGE_1" NODATE
 fi
 if [ "$INFO_MESSAGE_2" != "" ]
 then
-  log "$INFO_MESSAGE_2"
+  log "$INFO_MESSAGE_2" NODATE
 fi
 
 log "Local conda channel preparation finished!" SUCCESS

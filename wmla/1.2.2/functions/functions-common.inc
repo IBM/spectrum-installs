@@ -8,8 +8,8 @@ log() {
 
   if [ "$2" == "NODATE" ]
   then
-    echo $1
-    echo $1 >> $LOG_FILE
+    echo -e "$1"
+    echo -e "$1" >> $LOG_FILE
   else
     LOG_TYPE=$2
     if [ "$LOG_TYPE" == "" -o "$LOG_TYPE" == "NODATE" ]
@@ -23,9 +23,9 @@ log() {
       ERROR) COLOR=$COLOR_RED ;;
       *) COLOR= ;;
     esac
-    echo ${COLOR}`date "+%Y-%m-%d %H:%M:%S"` $1${COLOR_RESET}
+    echo -e ${COLOR}`date "+%Y-%m-%d %H:%M:%S"` "$1"${COLOR_RESET}
 
-    echo `date "+%Y-%m-%d %H:%M:%S"` - $LOG_TYPE - $1 >> $LOG_FILE
+    echo -e `date "+%Y-%m-%d %H:%M:%S"` - $LOG_TYPE - "$1" >> $LOG_FILE
   fi
 }
 
@@ -135,4 +135,29 @@ applyUlimits() {
   ulimit -u 65536 2>&1 | tee -a $LOG_FILE
   su -l $CLUSTERADMIN -c "ulimit -n 65536" 2>&1 | tee -a $LOG_FILE
   su -l $CLUSTERADMIN -c "ulimit -u 65536" 2>&1 | tee -a $LOG_FILE
+}
+
+checkPython() {
+  which $PYTHON_BIN >/dev/null 2>&1
+  if [ $? -ne 0 ]
+  then
+    log "python binary ($PYTHON_BIN) not found" ERROR
+    exit 1
+  else
+    $PYTHON_BIN --version 2>&1 | grep "Python 2.7" > /dev/null
+    if [ $? -ne 0 ]
+    then
+      log "python binary ($PYTHON_BIN) is not good version (2.7.x required)" ERROR
+      exit 1
+    fi
+  fi
+}
+
+checkJq() {
+  which $JQ_BIN >/dev/null 2>&1
+  if [ $? -ne 0 ]
+  then
+    log "jq binary ($JQ_BIN) not found" ERROR
+    exit 1
+  fi
 }

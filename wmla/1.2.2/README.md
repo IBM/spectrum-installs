@@ -12,6 +12,7 @@
     [4.4. Additional steps for airgap environment](#44-additional-steps-for-airgap-environment)  
     [4.5. Install the cluster](#45-install-the-cluster)  
     [4.6. Uninstall the cluster](#46-uninstall-the-cluster)  
+    [4.7. Managing lab environments](#47-managing-lab-environments)
 [5. Description of files](#5-description-of-files)  
 [6. Comments for SSL Certificates](#6-comments-for-ssl-certificates)  
 [7. Info](#7-info)  
@@ -35,6 +36,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 * If there are GPUs in server, nvidia driver and CUDA toolkit needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
+* jq binary needs to be available on the server where *create-lab-environment.sh* and *delete-lab-environment.sh* are executed (on the master host when executed by *install-cluster.sh*). Path to jq binary can be specified with *JQ_BIN* parameter in *parameters.inc* (by default "jq").
 * It is recommended to use these scripts from a shared filesystem accessible by all hosts. However if each node are installed individually without *install-cluster.sh*, scripts can be on local filesystem of each node and only the following parameters in *parameters.inc* need to be on a shared filesystem:
   * SSL_TMP_DIR (only used if SSL is enabled and *update-ssl-host.sh* is executed)
   * SYNC_DIR (only used if *INSTALL_TYPE=local* and there are additional management hosts)
@@ -47,7 +49,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 * If the Ansible playbook is used to install the cluster:
   * Ansible must be installed on the host where the playbook will be executed.
   * The user used to execute the playbook must have password-less ssh access to all hosts of the cluster.
-  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation. 
+  * The user must have permissions to sudo as root as most tasks of the playbook will do privilege escalation.
 
 ## 4. Usage
 
@@ -74,7 +76,7 @@ Edit parameters in *conf/parameters.inc*. Mandatory parameters (at the top of th
 * SSL
 * MASTERHOST
 * MASTER_CANDIDATES
-* CLUSTERINSTALL_CREATE_USER_ENVIRONMENT
+* CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT
 * CLUSTERINSTALL_UPDATE_SSL
 * BASE_INSTALL_DIR
 * BASE_SHARED_DIR
@@ -128,7 +130,7 @@ If ifix 546962 is not used, parameter *IFIX546962_EGOMGMT* need to be commented 
 ### 4.3. Additional steps to use local conda channel
 
 In order to accelerate installation, a local conda channel can be prepared, and conda environments will be created using this channel.  
-For some conda environments, even if all packages are available in the local conda channel, anaconda will still connect to Internet. Therefore for complete airgap installation, follow steps in section 4.4.  
+For some conda environments, even if all packages are available in the local conda channel, anaconda will still connect to Internet. If servers don't have internet access, follow steps in section 4.4 for complete airgap installation.  
 
 Follow the steps below to prepare the local conda channel.  
 
@@ -152,7 +154,7 @@ Copy the files prepared by *prepare-local-conda-channel.sh* in the scripts folde
 
 ### 4.4. Additional steps for airgap environment
 
-Installation in airgap environment is only supported if Anaconda instances are deployed on a shared filesystem if there are more than 1 host in the cluster. Therefore ensure that *conf/parameters.inc* is configured with one of these 2 options:  
+Installation in airgap environment is only supported if Anaconda instances are deployed on a shared filesystem if there is more than 1 host in the cluster. Therefore ensure that *conf/parameters.inc* is configured with one of these 2 options:  
 * *INSTALL_TYPE* = **shared**
 * *INSTALL_TYPE* = **local** and *DEPLOYMENT_TYPE* = **shared**
 
@@ -163,6 +165,8 @@ The installation of WMLA requires in most case files and packages which need to 
 * Conda packages for conda environments used by the Instance Groups if created.  
 
 Follow the steps below to download and prepare these files.  
+
+Specific conda environments need to be prepared for each lab environment, therefore it will only work for the number of lab environments specified as *ANACONDA_AIRGAP_NB_LAB_ENVS* in *conf/parameters.inc*.  
 
 If both *ANACONDA_LOCAL_CHANNEL* and *ANACONDA_AIRGAP_INSTALL* are enabled, airgap install method will be used to create the conda environments, and not the local conda channel.  
 
@@ -176,6 +180,7 @@ Edit following parameters in *conf/parameters.inc* in order to enable airgap ins
 * *ANACONDA_AIRGAP_INSTALL*: Enable airgap installation.
 * *ANACONDA_AIRGAP_DISTRIBUTION_NAME*: Anaconda distribution to use to create the conda environments.
 * *ANACONDA_DISTRIBUTION_NAME_TO_ADD*: New Anaconda distribution to download, which will be added to WMLA.
+* *ANACONDA_AIRGAP_NB_LAB_ENVS*: Number of lab environments to prepare.
 
 Also the value of *ANACONDA_DIR* needs to be the same as what it will be on the target cluster, because there are some absolute path in the conda environment files.  
 
@@ -220,7 +225,7 @@ ansible-playbook ansible-install-cluster.yaml -i ansible-inventory.ini
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egosh ego restart -f"
 ```
-5. To create User environment, execute *create-lab-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
+5. To create lab environment, execute *create-lab-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from WMLA GUI or with this CLI:
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f && egosh ego restart -f"
@@ -273,6 +278,43 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 * BASE_SHARED_DIR
 * EGO_SHARED_DIR
 
+### 4.7. Managing lab environments
+Multiple lab environments can be created to let users test WMLA.  
+Each lab environment have a user account to connect to the GUI, 3 Instance Groups (1 with spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT) with relevant Anaconda instance and conda environments, and optional Jupyter notebook examples and DLI dataset and model. At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.  
+A first lab environment is created by *install-cluster.sh* if __CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT=enabled__ in *conf/parameters.inc*.  
+
+#### 4.7.1. Preparation
+
+If WMLA Admin account password has been modified, update the following parameters in *conf/lab-environment.inc*:
+* EGO_ADMIN_USERNAME
+* EGO_ADMIN_PASSWORD
+
+In order to seed sample Jupyter notebooks and DLI dataset and model, follow these steps:  
+1. Prepare the sample files on the server where *create-lab-environment.sh* will be executed. For example:  
+* Jupyter examples can be downloaded at: [https://github.ibm.com/afrery/WMLA-helpers/tree/master/jupyter-notebooks](https://github.ibm.com/afrery/WMLA-helpers/tree/master/jupyter-notebooks).  
+* DLI examples can be downloaded at: [https://github.ibm.com/afrery/WMLA-helpers/tree/master/dli-examples](https://github.ibm.com/afrery/WMLA-helpers/tree/master/dli-examples).  
+
+2. Update following parameters in *conf/lab-environment.inc*:
+* NOTEBOOK_SOURCE_DIR
+* DLI_DATASET_SOURCE_DIR
+* DLI_MODEL_SOURCE_DIR
+
+#### 4.7.2. Create a lab environment
+To create a lab environment, execute the following script on one of the server of the cluster:
+```bash
+./create-lab-environment.sh
+```
+
+If __LAB_CREATE_OS_USER==enabled__, password-less SSH must be enabled from the host where this script is executed to all hosts of the cluster (except for the host where it's executed).
+
+#### 4.7.3. Delete a lab environment
+To delete a lab environment, execute the following script on one of the server of the cluster, with the username of the lab environment to delete as argument:
+```bash
+./delete-lab-environment.sh <USERNAME>
+```
+
+If __LAB_CREATE_OS_USER==enabled__, password-less SSH must be enabled from the host where this script is executed to all hosts of the cluster (except for the host where it's executed).
+
 ## 5. Description of files
 * __README.md__: Description of the scripts and how to use.
 * __prepare-host.sh__: Script to prepare current host before installation.
@@ -281,6 +323,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 * __postinstall-host.sh__: Post-installation script (Define rc init script for WMLA and EGO sudoers on current host).
 * __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
 * __create-lab-environment.sh__: Create 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 for DLI with EDT and 1 for DLI without EDT).
+* __delete-lab-environment.sh__: Delete a lab environment created by *create-lab-environment.sh*.
 * __prepare-local-conda-channel.sh__: Script to download Anaconda distribution and create a local conda channel.
 * __prepare-airgap-install.sh__: Script to download Anaconda distribution and create conda environments.
 * __forceuninstall-host.sh__: Uninstall WMLA on current host (stop EGO services, stop EGO on the current host and delete *BASE_INSTALL_DIR*).
@@ -291,6 +334,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 * __test-scripts.sh__: Script to test that these install scripts work properly. It should only be used by developers of these scripts.
 * __conf/__:
     * __parameters.inc__: Parameters for the installation.
+    * __lab-environment.inc__: Parameters for the lab environments.
     * __management-hosts.txt__: File containing list of management hosts of the cluster.
     * __compute-hosts.txt__: File containing list of compute hosts of the cluster.
 * __functions/__:
@@ -305,6 +349,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
     * __CondaEnv-dlinsights.yaml__: Conda environment profile for dlinsights EGO service.
     * __CondaEnv-dli.yaml__: Conda environment profile for dliedt Instance Group.
     * __CondaEnv-spark243.yaml__: Conda environment profile for spark243 Instance Group.
+    * __CondaEnv-wmlce.yaml__: Example of conda environment profile with Deep Learning Frameworks from IBM WMLCE.
     * __IG-dli.json__: Instance Group profile for DLI.
     * __IG-dliedt.json__: Instance Group profile for DLI with Elastic Distributed Training.
     * __IG-spark243.json__: Instance Group profile for spark243.

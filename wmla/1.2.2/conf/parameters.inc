@@ -11,7 +11,7 @@ export MASTERHOST=server1.domain.com # FQDN of master host of the cluster, as re
 export MASTER_CANDIDATES= # Specify all or a subset of management hosts which will be defined as master candidates. The list of hostnames (FQDN as returned by "hostname -f" must be separated with comma (",") and complete list enclosed with double quote). If this parameter is defined, EGO_SHARED_DIR must also be defined. Only used by install-cluster.sh.
 
 ### ALL HOSTS INSTALL
-export CLUSTERINSTALL_CREATE_USER_ENVIRONMENT=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create user environment based on parameters below.
+export CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create lab environment based on parameters defined in lab-environment.inc.
 export CLUSTERINSTALL_UPDATE_SSL=enabled # Specify enabled or disabled. If enabled, script install-cluster.sh will execute update-ssl-host.sh.
 
 ##### DIRECTORIES PARAMETERS
@@ -61,7 +61,7 @@ export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-${ARCH} # 
 export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le Anaconda2019.03-Python3-Linux-x86_64" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
 export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
 
-### ANACONDA PARAMETERS FOR DLI
+### ANACONDA PARAMETERS FOR DLINSIGHTS
 export DLI_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by dlinsights. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
 export DLI_ANACONDA_INSTANCE_NAME=WMLA-dlinsights # Anaconda instance to create, to be used by dlinsights.
 export DLI_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$DLI_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for dlinsights will be deployed.
@@ -69,28 +69,8 @@ export DLI_CONDA_HOME=$DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda # Directory of
 export DLI_CONDA_DLINSIGHTS_NAME=dlinsights # Conda environment name used by dlinsights EGO service. Cannot be changed as DLI is expecting this specific name.
 export DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-dlinsights.yaml # YAML profile for dlinsights conda environment.
 
-### ANACONDA PARAMETERS FOR INSTANCE GROUPS IF CREATED
-export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
-export IG_ANACONDA_INSTANCE_NAME=Anaconda3-2019-10 # Anaconda instance to create, to be used by Instance Groups if created.
-export IG_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$IG_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for Instance Groups will be deployed.
-
 ##### GPU RESOURCE GROUP PARAMETERS
 export RG_GPU_NAME=ComputeHostsGPU # Optional, name of GPU Resource Group to create. If not specified, no GPU Resource Group will be created.
-
-##### USER ENVIRONMENT PARAMETERS
-export IG_USER_NAME=user1 # Username of the user which will have access (consumer admin role) to the Instance Groups created.
-export IG_USER_PASSWORD=user1 # Password of the user which will have access (consumer admin role) to the Instance Groups created.
-export IG_SPARK243_NAME=ig-spark243 # Name of Instance Group to create with Spark 2.4.3 and Jupyter notebook.
-export IG_SPARK243_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-spark243.json # JSON profile for IG_SPARK243_NAME Instance Group.
-export IG_SPARK243_CONDA_ENV_NAME=spark243 # Name of conda environment to create, which will be used by IG_SPARK243_NAME Instance Group.
-export IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-spark243.yaml # YAML profile for IG_SPARK243_CONDA_ENV_NAME conda environment.
-export IG_DLI_CONDA_ENV_NAME=dli # Name of conda environment to create, which will be used by IG_DLI_NAME and IG_DLIEDT_NAME Instance Groups.
-export IG_DLI_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-dli.yaml # YAML profile for IG_DLI_CONDA_ENV_NAME conda environment.
-export IG_DLI_NAME=ig-dli # Name of Instance Group to create for Deep Learning Impact without EDT.
-export IG_DLI_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-dli.json # JSON profile for IG_DLI_NAME Instance Group.
-export IG_DLIEDT_NAME=ig-dliedt # Name of Instance Group to create for Deep Learning Impact with EDT.
-export IG_DLIEDT_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-dliedt.json # JSON profile for IG_DLIEDT_NAME Instance Group.
-export IG_DEPLOY_TIMEOUT=600 # Timeout in seconds for Instance Group deployment.
 
 ##### PATH TO BINARIES
 
@@ -116,6 +96,7 @@ export SCRIPTS_TMP_DIR=$CACHE_DIR/generated-scripts # Only required if you use i
 export MANAGEMENTHOSTS_FILE=`dirname "$(readlink -f "$0")"`/conf/management-hosts.txt # Path of file containing list of additional management hosts (FQDN as returned by "hostname -f"), 1 host per line.
 export COMPUTEHOSTS_FILE=`dirname "$(readlink -f "$0")"`/conf/compute-hosts.txt # Path of file containing list of compute hosts (FQDN as returned by "hostname -f"), 1 host per line. Only used by install-cluster.sh and update-ssl-host.sh.
 export PYTHON_BIN=python # Path to Python binary. Must be python 2.7.x.
+export JQ_BIN=jq # Path to jq binary.
 export STATUS_CHECK_WAITTIME=5 # Duration in seconds to wait before 2 check of status.
 export EGO_SHUTDOWN_WAITTIME=15 # Duration in seconds to wait after stopping or restarting EGO.
 export ANACONDA_DISTRIB_REPO_BASE_URL="https://repo.continuum.io/archive/" # Base URLs to download Anaconda distributions.
@@ -129,7 +110,7 @@ export PSSH_NBHOSTS_IN_PARALLEL=10 # Specify the number of management and comput
 export PSSH_TIMEOUT=0 # Timeout in seconds for execution of the install on each host when using pssh. 0 means no timeout. Only used by install-cluster.sh if pssh is installed and parameter PSSH_NBHOSTS_IN_PARALLEL is greater than 1.
 export INSTALL_FROM_RPMS=disabled # Specify enabled or disabled. If enabled, the script will extract rpms from Conductor and DLI bin installers and install from rpms with "--ignoresize" option (useful for Spectrum Scale shared install if you hit an error related to diskspace check).
 export INSTALL_FROM_RPMS_TMP_DIR=$CACHE_DIR/rpms # Only required if INSTALL_FROM_RPMS=enabled. Specify directory where RPMs will be extracted.
-export CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_USER_ENVIRONMENT=120 # Duration in seconds to wait for compute hosts to join the cluster before creating User Environment (only used by install-cluster.sh).
+export CLUSTERINSTALL_WAITTIME_BEFORE_CREATE_LAB_ENVIRONMENT=120 # Duration in seconds to wait for compute hosts to join the cluster before creating Lab Environment (only used by install-cluster.sh).
 
 ### ANSIBLE
 export ANSIBLE_INVENTORY_FILE=`dirname "$(readlink -f "$0")"`/ansible-inventory.ini # Path of Ansible inventory file that will be generated by ansible-create-inventory.sh and can be used by ansible-install-cluster.yaml and ansible-forceuninstall-cluster.yaml playbooks
@@ -146,12 +127,13 @@ export ANACONDA_LOCAL_CHANNEL_ARCHIVE=$CACHE_DIR/anaconda-local-channel.tgz # On
 export ANACONDA_LOCAL_CHANNEL_STRICT=disabled # Only required if you use prepare-local-conda-channel.sh. Specify enabled or disabled. If enabled, creation of conda environments will only use the local channel. It needs to be enabled if you are in an airgap environment.
 
 ### ANACONDA AIRGAP INSTALL
-export ANACONDA_AIRGAP_INSTALL=disabled # Specify enabled or disabled. If enabled, script prepare-airgap-install.sh will create the needed conda environments and package them in ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE and ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE. During installation, dlinsights service and Instance Groups will use the conda environments which will be created from ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE and ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE.
+export ANACONDA_AIRGAP_INSTALL=disabled # Specify enabled or disabled. If enabled, script prepare-airgap-install.sh will create the needed conda environments and package them in ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE and ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME-X.tgz. During installation, dlinsights service and Instance Groups will use the conda environments which will be created from ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE and ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE.
+export ANACONDA_AIRGAP_NB_LAB_ENVS=1 # Specify the number of lab environments for which conda environments will be prepared.
 export ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
 export ANACONDA_AIRGAP_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
 export ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-dlinsights.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the dlinsights conda environment.
-export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-ig.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the conda environments for Instance Groups.
+export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME=$CACHE_DIR/anaconda-airgap-install-ig # Only required if you use prepare-airgap-install.sh. Specify the name of the basename archive with the conda environments for Instance Groups. For each lab environment to prepare (number defined in ANACONDA_AIRGAP_NB_LAB_ENVS) an archive <ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME>-<LAB_ENV_NB>.tgz will be created.
 
 ### EGO DEFAULT SETTINGS
 export EGO_ADMIN_USERNAME=Admin # Default Admin username after EGO installation.

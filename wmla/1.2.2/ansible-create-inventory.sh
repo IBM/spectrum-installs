@@ -28,7 +28,7 @@ echo "ego_shared_dir=\"$EGO_SHARED_DIR\"" >> $ANSIBLE_INVENTORY_FILE
 echo "cluster_admin=\"$CLUSTERADMIN\"" >> $ANSIBLE_INVENTORY_FILE
 echo "install_type=\"$INSTALL_TYPE\"" >> $ANSIBLE_INVENTORY_FILE
 echo "update_ssl=\"$CLUSTERINSTALL_UPDATE_SSL\"" >> $ANSIBLE_INVENTORY_FILE
-echo "create_user_environment=\"$CLUSTERINSTALL_CREATE_USER_ENVIRONMENT\"" >> $ANSIBLE_INVENTORY_FILE
+echo "create_lab_environment=\"$CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT\"" >> $ANSIBLE_INVENTORY_FILE
 if [[ "$SSH_PORT" != "" && "$SSH_PORT" != "22" ]]
 then
   echo "ansible_port=\"$SSH_PORT\"" >> $ANSIBLE_INVENTORY_FILE
