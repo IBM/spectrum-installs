@@ -69,8 +69,9 @@ export DLI_CONDA_HOME=$DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda # Directory of
 export DLI_CONDA_DLINSIGHTS_NAME=dlinsights # Conda environment name used by dlinsights EGO service. Cannot be changed as DLI is expecting this specific name.
 export DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-dlinsights.yaml # YAML profile for dlinsights conda environment.
 
-##### GPU RESOURCE GROUP PARAMETERS
+##### RESOURCE GROUP PARAMETERS
 export RG_GPU_NAME=ComputeHostsGPU # Optional, name of GPU Resource Group to create. If not specified, no GPU Resource Group will be created.
+export RG_CPU_NB_SLOTS_PER_CORE=1 # Optional, if specified and different from 1 (1 being the default value), the Resource Group RG_CPU_NAME (ComputeHosts by default) will be updated with this number of slots per core.
 
 ##### PATH TO BINARIES
 

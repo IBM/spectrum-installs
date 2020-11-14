@@ -221,6 +221,12 @@ then
   createResourceGroupGPU $RG_GPU_NAME
 fi
 
+if [ "$RG_CPU_NB_SLOTS_PER_CORE" != "" -a "$RG_CPU_NB_SLOTS_PER_CORE" != "1" ]
+then
+  log "Updating CPU Resource Group $RG_CPU_NAME to $RG_CPU_NB_SLOTS_PER_CORE slots per core"
+  updateResourceGroupSlotsDefinition "$RG_CPU_NAME" "((ncpus*${RG_CPU_NB_SLOTS_PER_CORE}))"
+fi
+
 if [ "$ANACONDA_DISTRIBUTIONS_ID_TO_DELETE" != "" ]
 then
   for ANACONDA_DISTRIBUTION_ID_TO_DELETE in $ANACONDA_DISTRIBUTIONS_ID_TO_DELETE
