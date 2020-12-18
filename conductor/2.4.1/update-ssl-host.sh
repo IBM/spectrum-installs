@@ -23,6 +23,7 @@ then
 fi
 
 source $INSTALL_DIR/profile.platform
+export JAVA_HOME=$JAVA_HOME
 export PATH=$PATH:$JAVA_HOME/bin
 export KEYTOOL_BIN=$JAVA_HOME/bin/keytool
 export SECURITYUTILITY_BIN=$EGO_TOP/wlp/$WLP_VERSION/bin/securityUtility
