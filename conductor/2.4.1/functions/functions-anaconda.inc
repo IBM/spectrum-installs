@@ -782,6 +782,9 @@ deleteAnacondaDistribution() {
 	if [ "$HTTP_CODE" == "204" ]
 	then
 		log "Anaconda distribution $ANACONDA_DISTRIBUTION_ID delete operation started successfully" SUCCESS
+	elif [ "$HTTP_CODE" == "404" ]
+	then
+		log "Anaconda distribution $ANACONDA_DISTRIBUTION_ID does not exist.  Deletion skipped."
 	else
 		log "Failed to start deletion of Anaconda distribution $ANACONDA_DISTRIBUTION_ID (HTTP CODE $HTTP_CODE). Output of deletion tentative:" WARNING
 		log "$RESPONSE" WARNING
