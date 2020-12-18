@@ -1,4 +1,4 @@
-# Conductor 2.4.1 Setup scripts
+# Conductor 2.5.0 Setup scripts
 
 ## Table of Contents
 
@@ -19,18 +19,17 @@
 [7.2. Author](#72-author)  
 
 ## 1. Description
-These scripts will install or uninstall IBM Spectrum Conductor 2.4.1 on a cluster of x86_64 or ppc64le servers, either local or shared install.  
+These scripts will install or uninstall IBM Spectrum Conductor 2.5.0 on a cluster of x86_64 or ppc64le servers, either local or shared install.  
 It can also create a base user environment: user id, Anaconda instance, conda environment, and Instance Group with Spark 2.4.3 and Jupyter notebook.  
 Installation can be done in an airgap environment (environment without internet access) if needed.  
 Installation can be done using these bash scripts, or using the Ansible playbook.  
-Official documentation of IBM Spectrum Conductor is available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/conductorwithspark_kc_welcome.html).  
+Official documentation of IBM Spectrum Conductor is available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.5.0/conductorwithspark_kc_welcome.html).  
 
 ## 2. Components installed
-* Conductor 2.4.1
-* Ifix 546962 for WEBGUI (login issue due to cookie setting not recognized in Chrome and Safari)
+* Conductor 2.5.0
 
 ## 3. Pre-requisites
-* Servers need to be installed on a supported OS version and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/install/install_planning.html).
+* Servers need to be installed on a supported OS version and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.5.0/install/install_planning.html).
 * If there are GPUs in server, nvidia driver and CUDA toolkit needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
@@ -59,9 +58,9 @@ Download and copy these scripts to a shared filesystem accessible by all hosts y
 git clone https://github.com/IBM/spectrum-installs.git
 ```
 
-2. To copy Conductor 2.4.1 scripts:
+2. To copy Conductor 2.5.0 scripts:
 ```bash
-cp -r spectrum-installs/conductor/2.4.1 <shared-filesystem>/conductor-2.4.1-install
+cp -r spectrum-installs/conductor/2.4.1 <shared-filesystem>/conductor-2.5.0-install
 ```
 
 #### 4.1.2. Edit parameters
@@ -90,13 +89,12 @@ Add the list of servers to install (FQDN as returned by "hostname -f" command), 
 Either evaluation or entitled version can be used.  
 Evaluation version of Conductor can be downloaded [here](https://epwt-www.mybluemix.net/software/support/trial/cst/programwebsite.wss?siteId=301&h=null&p=null).  
 
-#### 4.2.2. Ifix 546962
-It can be downloaded [here](https://www.ibm.com/support/fixcentral/swg/selectFixes?product=ibm/Other+software/IBM+Spectrum+Conductor+with+Spark&release=All&platform=All&function=fixId&fixids=sc-2.4.1-build546962&includeSupersedes=0).  
+#### 4.2.2. Ifix
 
 #### 4.2.3. Configure parameters.inc
 By default these files are expected to be in the directory of the scripts, with this structure:
 * conductor
-  * conductor2.4.1.0_*ARCH*.bin
+  * conductor2.5.0.0_*ARCH*.bin
   * conductor_entitlement.dat
 * ifixes
   * egomgmt-3.8.0.1_noarch_build546962.tar.gz  
@@ -290,8 +288,8 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
     * __IG-spark243.json__: Instance Group profile for spark243.
 
 ## 6. Comments for SSL Certificates
-* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/get_started/locating_pmc.html).
-* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/manage_cluster/security_https.html).
+* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.5.0/get_started/locating_pmc.html).
+* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.5.0/manage_cluster/security_https.html).
 
 ## 7. Info
 ### 7.1. Source repository

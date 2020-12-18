@@ -53,13 +53,13 @@ export ARCH=`uname -m` # Identify current architecture of the server.
 
 ##### ANACONDA PARAMETERS
 ### COMMON
-export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
-export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le Anaconda2019.03-Python3-Linux-x86_64" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
-export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
+export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda4.8.3-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
+export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
+export ANACONDA_DISTRIBUTION_NAME_TO_ADD="" # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
 
 ### ANACONDA PARAMETERS FOR INSTANCE GROUPS IF CREATED
-export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
-export IG_ANACONDA_INSTANCE_NAME=Anaconda3-2019-10 # Anaconda instance to create, to be used by Instance Groups if created.
+export IG_ANACONDA_DISTRIBUTION_ID="" # Anaconda distribution to be used by Instance Groups if created. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
+export IG_ANACONDA_INSTANCE_NAME=Miniconda4-8-3 # Anaconda instance to create, to be used by Instance Groups if created.
 export IG_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$IG_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for Instance Groups will be deployed.
 
 ##### GPU RESOURCE GROUP PARAMETERS
@@ -77,11 +77,8 @@ export IG_DEPLOY_TIMEOUT=600 # Timeout in seconds for Instance Group deployment.
 ##### PATH TO BINARIES
 
 ### CONDUCTOR INSTALLER AND ENTITLEMENT
-export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.4.1.0_${ARCH}.bin # Path to conductor 2.4.1 .bin installer.
-export CONDUCTOR_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/conductor/conductor_entitlement.dat # Path to conductor 2.4.1 entitlement.
-
-### IFIXES
-export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546962.
+export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.5.0.0_${ARCH}.bin # Path to conductor 2.5.0 .bin installer.
+export CONDUCTOR_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/conductor/conductor_entitlement.dat # Path to conductor 2.5.0 entitlement.
 
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES
