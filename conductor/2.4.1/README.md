@@ -55,7 +55,7 @@ Official documentation of IBM Spectrum Conductor is available [here](https://www
 Download and copy these scripts to a shared filesystem accessible by all hosts you are planning to install Conductor on.  
 1. To download it:
 ```bash
-git clone https://github.com/IBM/spectrum-installs.git
+git clone -b conductor-2.5.0 https://github.com/IBM/spectrum-installs.git
 ```
 
 2. To copy Conductor 2.5.0 scripts:
@@ -96,16 +96,12 @@ By default these files are expected to be in the directory of the scripts, with 
 * conductor
   * conductor2.5.0.0_*ARCH*.bin
   * conductor_entitlement.dat
-* ifixes
-  * egomgmt-3.8.0.1_noarch_build546962.tar.gz  
 
 Path to these files can be changed in *conf/parameters.inc*.  
 
 If the evaluation version is used, these 2 parameters need to be updated with the correct filenames:  
 * CONDUCTOR_BIN
 * CONDUCTOR_ENTITLEMENT
-
-If ifix 546962 is not used, parameter *IFIX546962_EGOMGMT* need to be commented in *conf/parameters.inc*.  
 
 ### 4.3. Additional steps to use local conda channel
 
