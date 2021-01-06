@@ -51,12 +51,12 @@ Official documentation of IBM Spectrum Symphony is available [here](https://www.
 Download and copy these scripts to a shared filesystem accessible by all hosts you are planning to install Symphony on.  
 1. To download it:
 ```bash
-git clone https://github.com/IBM/spectrum-installs.git
+git clone -b symphony-7.3.0 https://github.com/IBM/spectrum-installs.git
 ```
 
 2. To copy Symphony 7.3.0 scripts:
 ```bash
-cp -r spectrum-installs/symphony/7.3.0 <shared-filesystem>/symphony-7.3.0-install
+cp -r spectrum-installs/symphony <shared-filesystem>/symphony-7.3.0-install
 ```
 
 #### 4.1.2. Edit parameters
