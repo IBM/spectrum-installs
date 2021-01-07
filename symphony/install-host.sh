@@ -91,7 +91,6 @@ else
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm" EGO
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/soam*.rpm" SOAM
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm" OpenJDK
-	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm" NodeJs
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/hf*.rpm" HostFactory
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm" Explorer
 fi
