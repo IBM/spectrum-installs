@@ -18,9 +18,8 @@ export POSTINSTALL_AUTOMATIC_CONFIG=enabled # Specify enabled or disabled. If en
 export CLUSTERINSTALL_CREATE_DEMO_ENVIRONMENT=disabled # Specify enabled or disabled. If enabled, script install-cluster.sh will create demo environment based on parameters below.
 
 ### HADOOP INTEGRATION
-export REMOVE_HADOOP_COMPONENTS=enabled # Specify enabled or disabled. If enabled, all EGO services, consumers and resource groups related to Hadoop MapReduce and YARN integration will be removed.
-
 # Optional parameters to define if you are planning to use MapReduce framework and/or YARN integration on Symphony.
+export INSTALL_MAPREDUCE=N # Specify Y to install MapReduce and YARN integration components, N to not install them.
 export JAVA_HOME= # Specify path to Java directory to use for MapReduce framework.
 export HADOOP_HOME= # Specify the installation directory of the Hadoop distribution.
 export HADOOP_VERSION= # Specify the version of the Hadoop distribution.
@@ -40,17 +39,14 @@ export INSTALL_DIR=$BASE_INSTALL_DIR/install # Directory where Symphony will be 
 export RPMDB_DIR=$BASE_INSTALL_DIR/rpmdb # Directory for Symphony RPMs database. If INSTALL_TYPE=shared, it must be on shared FS.
 
 ### SYMPHONY INSTALLER AND ENTITLEMENT
-export SYMPHONY_BIN=`dirname "$(readlink -f "$0")"`/symphony/sym-7.3.0.0_`uname -m`.bin # Path to symphony 7.3.0 .bin installer.
-export SYMPHONY_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/symphony/sym_adv_entitlement.dat # Path to symphony 7.3.0 entitlement, either standard or advanced edition.
-
-### IFIXES
-export IFIX546970_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.0_noarch_build546970.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546970.
+export SYMPHONY_BIN=`dirname "$(readlink -f "$0")"`/symphony/sym-7.3.1.0_`uname -m`.bin # Path to symphony 7.3.1 .bin installer.
+export SYMPHONY_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/symphony/sym_adv_entitlement.dat # Path to symphony 7.3.1 entitlement, either standard or advanced edition.
 
 ### DEMO ENVIRONMENT
 export DEMO_USER=demo # Username of the user which will have access (consumer admin role) to the applications created.
 export DEMO_PASSWORD=demo # Password of the user which will have access (consumer admin role) to the applications created.
 export DEMO_APP_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/app.xml # Application profile template to use to create applications.
-export DEMO_VAR_APP_NAME=Demo7.3 # Name of the Value at Risk demo application installed by Symphony
+export DEMO_VAR_APP_NAME=Demo7.3.1 # Name of the Value at Risk demo application installed by Symphony
 export DEMO_VAR_CONSUMER_PATH=/SampleApplications/SOADemo # Consumer in which DEMO_VAR_APP_NAME is deployed
 
 ##### SCRIPTS PARAMETERS

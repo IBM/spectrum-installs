@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Profile xmlns="http://www.platform.com/Symphony/Profile/Application" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="7.3">
+<Profile xmlns="http://www.platform.com/Symphony/Profile/Application" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="7.3.1">
 
     <Consumer applicationName="##APP_NAME##" consumerId="##CONSUMER_PATH##"
               preStartApplication="false" numOfSlotsForPreloadedServices="1" resourceGroupName="##RG_COMPUTE_NAME##"
               taskHighWaterMark="1.0" taskLowWaterMark="1.0"/>
 
-    <SOAM version="7.3">
+    <SOAM version="7.3.1">
         <SSM resourceGroupName="##RG_MANAGEMENT_NAME##" resReq="" workDir="${SOAM_HOME}/work" startUpTimeout="60" shutDownTimeout="300">
     	     <boundaryManagerConfig>
                 <boundaries>
@@ -58,7 +58,7 @@
                 startCmd="${SOAM_HOME}/${VERSION_NUM}/${EGO_MACHINE_TYPE}/bin/sympingservice"
                 fileNamePattern="%sessionId%.%taskId%."
                 logDirectory="${SOAM_HOME}/work"
-                subDirectoryPattern="symping7.3/%sessionId%"
+                subDirectoryPattern="symping7.3.1/%sessionId%"
                 workDir="${SOAM_HOME}/work">
             </osType>
         </osTypes>

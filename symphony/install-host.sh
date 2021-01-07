@@ -171,9 +171,9 @@ then
 	createConsumerSingleRG "/ManagementServices/SymphonyManagementServices" $CLUSTERADMIN $RG_MANAGEMENT_NAME "Guest"
 	createConsumerSingleRG "/ClusterServices/SymphonyClusterServices" $CLUSTERADMIN $RG_INTERNAL_NAME "Guest"
 	createConsumer "/SymTesting" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
-	createConsumer "/SymTesting/Symping73" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SymTesting/Symping731" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
 	createConsumer "/SymExec" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
-	createConsumer "/SymExec/SymExec73" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
+	createConsumer "/SymExec/SymExec731" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
 	createConsumer "/SampleApplications/SOASamples" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
 	createConsumer "/SampleApplications/SOADemo" $CLUSTERADMIN $RG_COMPUTE_NAME $RG_MANAGEMENT_NAME "Guest"
 	createEgoService "$INSTALL_DIR/gui/conf/post_install/sd.xml"
@@ -184,44 +184,6 @@ then
 	log "Removing post-install files from GUI config directory"
 	rm -f $INSTALL_DIR/gui/conf/post_install/*
 	restartEgoService WEBGUI
-fi
-
-
-if [ "$REMOVE_HADOOP_COMPONENTS" == "enabled" ]
-then
-	if [ "$INSTALL_MULTI_HEAD" != "enabled" ]
-	then
-		log "Wait for EGO service REST to be up"
-		waitForRestUp
-
-		log "Deleting MapReduce application"
-		deleteApplication "MapReduce7.3"
-
-		log "Deleting Hadoop EGO services"
-		deleteEgoService "MRSS"
-		deleteEgoService "SecondaryNode"
-		deleteEgoService "NameNode"
-		deleteEgoService "DataNode"
-		deleteEgoService "EGOYARN"
-
-		log "Deleting Hadoop consumers"
-		deleteConsumer "HDFS"
-		deleteConsumer "MapReduceConsumer"
-		deleteConsumer "ComputeServices"
-		deleteConsumer "YARN"
-		deleteConsumer "YARNComputeConsumer"
-
-		log "Deleting Hadoop resource groups"
-		deleteResourceGroup "DataNodeRG"
-		deleteResourceGroup "MapReduceInternalResourceGroup"
-		deleteResourceGroup "NameNodeRG"
-		deleteResourceGroup "SecondaryNodeRG"
-	else
-		if [ "$POSTINSTALL_AUTOMATIC_CONFIG" != "enabled" ]
-		then
-			log "Hadoop components cannot be removed, as they will only be configured when you follow the wizard when you log on to the GUI" WARNING
-		fi
-	fi
 fi
 
 log "Get WEBGUI URL"

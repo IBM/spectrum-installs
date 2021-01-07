@@ -1,4 +1,4 @@
-# Symphony 7.3.0 Setup scripts
+# Symphony 7.3.1 Setup scripts
 
 ## Table of Contents
 
@@ -18,17 +18,17 @@
 [7.2. Author](#72-author)  
 
 ## 1. Description
-These scripts will install or uninstall IBM Spectrum Symphony 7.3.0 on a cluster of x86_64 or ppc64le servers, with RHEL Operating System, either local or shared install.  
+These scripts will install or uninstall IBM Spectrum Symphony 7.3.1 on a cluster of x86_64 or ppc64le servers, with RHEL Operating System, either local or shared install.  
 It can also create a demo environment: user id, sample applications using symping and enable the Value-at-Risk demo application.  
+Lab environments can also be created with 2 sample applications using symping and access to the Value-at-Risk demo application.  
 Installation can be done using these bash scripts, or using the Ansible playbook.
-Official documentation of IBM Spectrum Symphony is available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/sym_kc_welcome.html).
+Official documentation of IBM Spectrum Symphony is available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.1/sym_kc_welcome.html).
 
 ## 2. Components installed
-* Symphony 7.3.0
-* Ifix 546970 for WEBGUI (login issue due to cookie setting not recognized in Chrome and Safari)
+* Symphony 7.3.1
 
 ## 3. Pre-requisites
-* Servers need to be installed on a supported Linux OS version mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/product_table/linux_support.html) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/install_grid_sym/sym_system_requirements.html).
+* Servers need to be installed on a supported Linux OS version mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.1/product_table/linux_support.html) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.1/install_grid_sym/sym_system_requirements.html).
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
 * It is recommended to use these scripts from a shared filesystem accessible by all hosts. However if each node are installed individually without *install-cluster.sh*, scripts can be on local filesystem of each node and only the following parameters in *parameters.inc* need to be on a shared filesystem:
@@ -54,9 +54,9 @@ Download and copy these scripts to a shared filesystem accessible by all hosts y
 git clone https://github.com/IBM/spectrum-installs.git
 ```
 
-2. To copy Symphony 7.3.0 scripts:
+2. To copy Symphony 7.3.1 scripts:
 ```bash
-cp -r spectrum-installs/symphony/7.3.0 <shared-filesystem>/symphony-7.3.0-install
+cp -r spectrum-installs/symphony <shared-filesystem>/symphony-7.3.1-install
 ```
 
 #### 4.1.2. Edit parameters
@@ -81,16 +81,11 @@ Add the list of servers to install (FQDN as returned by "hostname -f" command), 
 Either evaluation or entitled version can be used.  
 Evaluation version of Symphony can be downloaded [here](https://epwt-www.mybluemix.net/software/support/trial/cst/welcomepage.wss?siteId=407&tabId=696&w=1&_ga=2.37481056.1963202311.1593446931-1746922340.1591820378&_gac=1.146273606.1592931153.Cj0KCQjw0Mb3BRCaARIsAPSNGpVvs4_x350LirZlBCCNA0vOZjO30Jacgk-lDhTE_4_ZvNNTu_glzkoaAvEoEALw_wcB&cm_mc_uid=21505324293715918203757&cm_mc_sid_50200000=17973571593490217046).  
 
-#### 4.2.2. Ifix 546970
-It can be downloaded [here](https://www.ibm.com/support/fixcentral/swg/downloadFixes?parent=IBM%20Spectrum%20Computing&product=ibm/Other+software/IBM+Spectrum+Symphony&release=7.3&function=fixId&fixids=sym-7.3-build546970).  
-
-#### 4.2.3. Configure parameters.inc
+#### 4.2.2. Configure parameters.inc
 By default these files are expected to be in the directory of the scripts, with this structure:
 * symphony
-  * sym-7.3.0.0_*ARCH*.bin
+  * sym-7.3.1.0_*ARCH*.bin
   * sym_adv_entitlement.dat
-* ifixes
-  * egomgmt-3.8.0.0_noarch_build546970.tar.gz
 
 Path to these files can be changed in *conf/parameters.inc*.
 
@@ -242,8 +237,8 @@ To enable this advanced configuration, edit following parameters in *conf/lab-en
     * __app.xml__: Application profile template for the demo environment.
 
 ## 6. Comments for SSL Certificates
-* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/help/admin/locating_pmc.html).
-* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.0/security/security_https.html).
+* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.1/help/admin/locating_pmc.html).
+* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZUMP_7.3.1/security/security_https.html).
 
 ## 7. Info
 ### 7.1. Source repository

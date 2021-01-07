@@ -14,5 +14,5 @@ export LAB_EXERCISES_TEMPLATES_DIR= # If specified and LAB_CREATE_OS_USER=enable
 
 ### DEMO SETTINGS
 export DEMO_APP_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/app.xml # Application profile template to use to create applications.
-export DEMO_VAR_APP_NAME=Demo7.3 # Name of the Value at Risk demo application installed by Symphony
+export DEMO_VAR_APP_NAME=Demo7.3.1 # Name of the Value at Risk demo application installed by Symphony
 export DEMO_VAR_CONSUMER_PATH=/SampleApplications/SOADemo # Consumer in which DEMO_VAR_APP_NAME is deployed

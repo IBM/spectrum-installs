@@ -10,12 +10,12 @@
 # Test cases are executed sequentially.
 #
 # TEST CASES
-# Test id # NB MANAGEMENT # NB COMPUTE # INSTALL_TYPE #   SSL    # bin/rpm # remove hadoop # demo env # pssh
-#    1    #       0       #      0     #    shared    # enabled  #   bin   #      yes      #   yes    #  yes
-#    2    #       0       #      1     #    shared    # enabled  #   rpm   #      no       #   no     #  no
-#    3    #       1       #      0     #    shared    # disabled #   bin   #      yes      #   no     #  yes
-#    4    #       1       #      0     #    local     # disabled #   bin   #      yes      #   no     #  yes
-#    5    #       0       #      1     #    local     # enabled  #   rpm   #      no       #   yes    #  no
+# Test id # NB MANAGEMENT # NB COMPUTE # INSTALL_TYPE #   SSL    # bin/rpm # install hadoop # demo env # pssh
+#    1    #       0       #      0     #    shared    # enabled  #   bin   #       yes      #   yes    #  yes
+#    2    #       0       #      1     #    shared    # enabled  #   rpm   #       no       #   no     #  no
+#    3    #       1       #      0     #    shared    # disabled #   bin   #       yes      #   no     #  yes
+#    4    #       1       #      0     #    local     # disabled #   bin   #       yes      #   no     #  yes
+#    5    #       0       #      1     #    local     # enabled  #   rpm   #       no       #   yes    #  no
 #
 # USAGE
 # 1. Pull the repo on shared FS accessible by hosts defined in PARAMETERS section

@@ -25,7 +25,7 @@ then
 fi
 
 log "Install pre-requisite packages"
-yum install -y openssl curl gettext bind-utils net-tools dejavu-serif-fonts ed sudo zip wget 2>&1 | tee -a $LOG_FILE
+yum install -y openssl curl gettext bind-utils net-tools dejavu-serif-fonts ed sudo zip wget bc 2>&1 | tee -a $LOG_FILE
 
 log "Create limits configuration"
 LIMITS_SPECTRUM_FILE=/etc/security/limits.d/99-spectrum.conf
