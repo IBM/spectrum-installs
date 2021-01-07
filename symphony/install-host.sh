@@ -90,7 +90,9 @@ else
 	$SYMPHONY_BIN --extract $INSTALL_FROM_RPMS_TMP_DIR --quiet 2>&1 | tee -a $LOG_FILE
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/ego*.rpm" EGO
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/soam*.rpm" SOAM
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/openjdkjre*.rpm" OpenJDK
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/nodejs*.rpm" NodeJs
+	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/hf*.rpm" HostFactory
 	installRPMs "$INSTALL_FROM_RPMS_TMP_DIR/explorer*.rpm" Explorer
 fi
 
