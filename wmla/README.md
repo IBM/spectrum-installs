@@ -64,7 +64,7 @@ git clone https://github.com/IBM/spectrum-installs.git
 
 2. To copy WMLA 1.2.2 scripts:
 ```bash
-cp -r spectrum-installs/wmla/1.2.2 <shared-filesystem>/wmla-1.2.2-install
+cp -r spectrum-installs/wmla <shared-filesystem>/wmla-1.2.2-install
 ```
 
 #### 4.1.2. Edit parameters
