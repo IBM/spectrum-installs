@@ -20,10 +20,9 @@
 # USAGE
 # 1. Pull the repo on shared FS accessible by hosts defined in PARAMETERS section
 # 2. Add Symphony installer and entitlement file, and update path in parameters.inc if necessary
-# 3. Add ifixes files and update path in parameters.inc if necessary
-# 4. Update parameters in PARAMETERS section at the top of this script
-# 5. Execute this script on server defined as SERVER1_HOSTNAME
-# 6. Check results in TESTS_DIR
+# 3. Update parameters in PARAMETERS section at the top of this script
+# 4. Execute this script on server defined as SERVER1_HOSTNAME
+# 5. Check results in TESTS_DIR
 #############################
 
 ### PARAMETERS
