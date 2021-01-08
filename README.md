@@ -2,9 +2,12 @@
 
 ## Description
 This repository provides example scripts to automate installation of the following IBM Spectrum Computing products:
-* [Conductor](conductor/2.4.1)
-* [Symphony](symphony/7.3.0)
-* [Watson Machine Learning Accelerator](wmla/1.2.2)
+* [Conductor](conductor)
+* [Symphony](symphony)
+* [Watson Machine Learning Accelerator](wmla)
+  
+The branch __master__ contains scripts to install latest version of each product.  
+Installation scripts for previous versions are available in other branches, typically __<product>-<version>__.  
 
 ## Disclaimer
 These scripts are provided as-is, and are not guaranteed to work in your environment.  
