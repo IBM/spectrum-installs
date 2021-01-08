@@ -7,7 +7,7 @@ This repository provides example scripts to automate installation of the followi
 * [Watson Machine Learning Accelerator](wmla)
   
 The branch __master__ contains scripts to install latest version of each product.  
-Installation scripts for previous versions are available in other branches, typically __<product>-<version>__.  
+Installation scripts for previous versions are available in other branches, typically __\<product\>-\<version\>__.  
 
 ## Disclaimer
 These scripts are provided as-is, and are not guaranteed to work in your environment.  
