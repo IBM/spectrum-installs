@@ -59,7 +59,7 @@ Official documentation of WMLA is available [here](https://www.ibm.com/support/k
 Download and copy these scripts to a shared filesystem accessible by all hosts you are planning to install WMLA on.  
 1. To download it:
 ```bash
-git clone https://github.com/IBM/spectrum-installs.git
+git clone -b wmla-1.2.2 https://github.com/IBM/spectrum-installs.git
 ```
 
 2. To copy WMLA 1.2.2 scripts:
