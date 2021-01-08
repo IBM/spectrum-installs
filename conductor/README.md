@@ -61,7 +61,7 @@ git clone https://github.com/IBM/spectrum-installs.git
 
 2. To copy Conductor 2.4.1 scripts:
 ```bash
-cp -r spectrum-installs/conductor/2.4.1 <shared-filesystem>/conductor-2.4.1-install
+cp -r spectrum-installs/conductor <shared-filesystem>/conductor-2.4.1-install
 ```
 
 #### 4.1.2. Edit parameters
