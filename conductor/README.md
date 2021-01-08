@@ -56,7 +56,7 @@ Official documentation of IBM Spectrum Conductor is available [here](https://www
 Download and copy these scripts to a shared filesystem accessible by all hosts you are planning to install Conductor on.  
 1. To download it:
 ```bash
-git clone https://github.com/IBM/spectrum-installs.git
+git clone -b conductor-2.4.1 https://github.com/IBM/spectrum-installs.git
 ```
 
 2. To copy Conductor 2.4.1 scripts:
