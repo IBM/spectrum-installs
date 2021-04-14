@@ -1,20 +1,42 @@
 name: ##CONDA_ENV_NAME##
 channels:
-  - https://public.dhe.ibm.com/ibmdl/export/pub/software/server/ibm-ai/conda/
-  - defaults
+- ##CONDA_OPENCE_CHANNEL##
+- defaults
 dependencies:
-  - python=3.7
-  - powerai==1.7.0
-  - keras==2.3.1
-  - nose==1.3.7
-  - requests==2.22.0
-  - pathlib==1.0.1
-  - redis-py==3.2.1
-  - chardet==3.0.4
-  - python-gflags==3.1.2
-  - pyzmq==17.1.2
-  - defusedxml==0.6.0
-  - ipython==7.13.0
-  - pandas==1.0.3
+- defaults::python==3.7.10
+- defaults::cudatoolkit==11.0.*
+- pip
+# Open-CE required framework
+- tensorflow==2.4.1
+- tensorflow-datasets==4.1.0
+- tensorboard==2.4.1
+- pytorch==1.7.1
+- torchvision==0.8.2
+- opencv==3.4.10
+- py-xgboost==1.3.3
+# Open-CE optional framework
+#- libevent==2.1.11
+#- tensorflow-serving==2.4.1
+#- dm-tree==0.1.5
+#- tensorflow-probability==0.12.1
+#- tensorflow-estimator==2.4.0
+#- tensorflow-hub==0.10.0
+#- tensorflow-text==2.4.1
+#- tensorflow-model-optimization==0.5.0
+#- tensorflow-addons==0.11.2
+# WML-A dependencies
+- defaults::nose==1.3.7
+- defaults::redis-py==3.2.1
+- defaults::python-gflags==3.1.2
+- defaults::defusedxml==0.6.0
+- defaults::pandas==1.0.3
+- defaults::dill==0.3.1.1
+- defaults::ipython==7.13.0
+- defaults::requests==2.22.0
+- defaults::pathlib==1.0.1
+- defaults::chardet==3.0.4
+- defaults::pyzmq==19.0.2
+- defaults::scikit-learn==0.23.2
+- pip:
+  - keras2onnx==1.6.1
   - gensim==3.8.0
-  - dill==0.3.1.1

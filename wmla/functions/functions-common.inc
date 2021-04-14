@@ -161,3 +161,30 @@ checkJq() {
     exit 1
   fi
 }
+
+extractTarArchive(){
+  local ARCHIVE_FILE=$1
+  local ARCHIVE_EXTRACT_DIR=$2
+  if [ -d "$ARCHIVE_EXTRACT_DIR" ]
+  then
+    log "Directory $ARCHIVE_EXTRACT_DIR already exists"
+  else
+    log "Creating directory $ARCHIVE_EXTRACT_DIR"
+    mkdir -p $ARCHIVE_EXTRACT_DIR >/dev/null 2>&1
+    local CODE=$?
+    if [ $CODE -ne 0 ]
+    then
+      log "Error when creating directory $ARCHIVE_EXTRACT_DIR (error code of mkdir: $CODE)" WARNING
+    else
+      log "Extracting $ARCHIVE_FILE in $ARCHIVE_EXTRACT_DIR"
+      tar xf $ARCHIVE_FILE -C $ARCHIVE_EXTRACT_DIR >/dev/null 2>&1
+      local CODE=$?
+      if [ $CODE -ne 0 ]
+      then
+        log "Error when creating directory $ARCHIVE_EXTRACT_DIR (error code of tar: $CODE)" WARNING
+      else
+        log "Archive successfully extracted" SUCCESS
+      fi
+    fi
+  fi
+}

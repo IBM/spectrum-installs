@@ -57,12 +57,14 @@ export ARCH=`uname -m` # Identify current architecture of the server.
 
 ##### ANACONDA PARAMETERS
 ### COMMON
-export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda2019.03-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
-export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="Anaconda2019.03-Python3-Linux-ppc64le Anaconda2019.03-Python3-Linux-x86_64" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
-export ANACONDA_DISTRIBUTION_NAME_TO_ADD=Anaconda3-2019.10-Linux-${ARCH} # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
+export ANACONDA_DISTRIBUTION_ID_DEFAULT=Anaconda4.8.3-Python3-Linux-${ARCH} # Default Anaconda distribution installed by Conductor, which will be used if ANACONDA_DISTRIBUTION_NAME_TO_ADD is not specified.
+export ANACONDA_DISTRIBUTIONS_ID_TO_DELETE="" # Optional, list (space separated) of the default Anaconda distribution installed by Conductor, which will be deleted.
+export ANACONDA_DISTRIBUTION_NAME_TO_ADD= # Optional, specify a new Anaconda distribution to install on Conductor, which will be use for the different conda environments. The name must be a filename available on ANACONDA_DISTRIB_REPO_BASE_URL minus the ".sh" extension. You can download the file in advance and put it in $CACHE_DIR/$ANACONDA_DISTRIBUTION_NAME_TO_ADD.sh, or the script will download it.
+export CONDA_OPENCE_ARCHIVE=`dirname "$(readlink -f "$0")"`/wmladl/wmladl-cuda11.0-py37_${ARCH}.tgz # Specify the path to the WMLA-DL (OpenCE) archive
+export CONDA_OPENCE_DIR=$BASE_INSTALL_DIR/wmladl # Specify the path to the directory where WMLA-DL will be untar
 
 ### ANACONDA PARAMETERS FOR DLINSIGHTS
-export DLI_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by dlinsights. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
+export DLI_ANACONDA_DISTRIBUTION_ID= # Anaconda distribution to be used by dlinsights. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT will be used.
 export DLI_ANACONDA_INSTANCE_NAME=WMLA-dlinsights # Anaconda instance to create, to be used by dlinsights.
 export DLI_ANACONDA_INSTANCE_DEPLOY_HOME=$ANACONDA_DIR/$DLI_ANACONDA_INSTANCE_NAME # Directory where Anaconda instance for dlinsights will be deployed.
 export DLI_CONDA_HOME=$DLI_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda # Directory of anaconda folder within the Anaconda instance deployment directory, which will be used by dlinsights.
@@ -76,15 +78,12 @@ export RG_CPU_NB_SLOTS_PER_CORE=1 # Optional, if specified and different from 1 
 ##### PATH TO BINARIES
 
 ### CONDUCTOR INSTALLER AND ENTITLEMENT
-export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.4.1.0_${ARCH}.bin # Path to conductor 2.4.1 .bin installer.
-export CONDUCTOR_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/conductor/conductor_entitlement.dat # Path to conductor 2.4.1 entitlement.
+export CONDUCTOR_BIN=`dirname "$(readlink -f "$0")"`/conductor/conductor2.5.0.0_${ARCH}.bin # Path to conductor 2.5.0 .bin installer.
+export CONDUCTOR_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/conductor/conductor_entitlement.dat # Path to conductor 2.5.0 entitlement.
 
 ### DLI INSTALLER AND ENTITLEMENT
-export DLI_BIN=`dirname "$(readlink -f "$0")"`/dli/dli-1.2.4.0_${ARCH}.bin # Path to DLI 1.2.4 .bin installer.
-export DLI_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/dli/dli_entitlement.dat # Path to DLI 1.2.4 entitlement.
-
-### IFIXES
-export IFIX546962_EGOMGMT=`dirname "$(readlink -f "$0")"`/ifixes/egomgmt-3.8.0.1_noarch_build546962.tar.gz # Optional, if specified this ifix will be installed. Path to egomgmt .tar.gz for ifix 546962.
+export DLI_BIN=`dirname "$(readlink -f "$0")"`/dli/dli-1.2.5.0_${ARCH}.bin # Path to DLI 1.2.5 .bin installer.
+export DLI_ENTITLEMENT=`dirname "$(readlink -f "$0")"`/dli/dli_entitlement.dat # Path to DLI 1.2.5 entitlement.
 
 ##### SCRIPTS PARAMETERS
 ### WORKING DIRECTORIES
@@ -100,7 +99,7 @@ export PYTHON_BIN=python # Path to Python binary. Must be python 2.7.x.
 export JQ_BIN=jq # Path to jq binary.
 export STATUS_CHECK_WAITTIME=5 # Duration in seconds to wait before 2 check of status.
 export EGO_SHUTDOWN_WAITTIME=15 # Duration in seconds to wait after stopping or restarting EGO.
-export ANACONDA_DISTRIB_REPO_BASE_URL="https://repo.continuum.io/archive/" # Base URLs to download Anaconda distributions.
+export ANACONDA_DISTRIB_REPO_BASE_URL="https://repo.anaconda.com/miniconda/" # Base URLs to download Anaconda distributions.
 export CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
 export UPDATE_RP_SCRIPT=`dirname "$(readlink -f "$0")"`/functions/update-resource-plan.py # Python script to update share ratio of Instance Groups consumers in the resource plan.
@@ -121,7 +120,7 @@ export ANACONDA_LOCAL_CHANNEL=disabled # Specify enabled or disabled. If enabled
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_TYPE=profile # Specify profile or twosteps. If profile is specified, conda environment will be created with the profile. If twosteps if specified, empty conda environment will be created first, then packages from the profile will be installed.
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export ANACONDA_LOCAL_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
-export ANACONDA_LOCAL_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-local-conda-channel.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
+export ANACONDA_LOCAL_DISTRIBUTION_NAME=Miniconda3-py37_4.8.3-Linux-${ARCH} # Only required if you use prepare-local-conda-channel.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
 export ANACONDA_LOCAL_INSTALL_DIR=$CACHE_DIR/anaconda-local-install # Only required if you use prepare-local-conda-channel.sh. Directory where Anaconda will be installed to prepare conda packages to create the local conda channel.
 export ANACONDA_LOCAL_CHANNEL_DIR=$CACHE_DIR/anaconda-local-channel # Only required if you use prepare-local-conda-channel.sh. Specify the directory of the local conda channel.
 export ANACONDA_LOCAL_CHANNEL_ARCHIVE=$CACHE_DIR/anaconda-local-channel.tgz # Only required if you use prepare-local-conda-channel.sh. Specify the name of the archive (.tgz) of the local conda channel.
@@ -132,7 +131,7 @@ export ANACONDA_AIRGAP_INSTALL=disabled # Specify enabled or disabled. If enable
 export ANACONDA_AIRGAP_NB_LAB_ENVS=1 # Specify the number of lab environments for which conda environments will be prepared.
 export ANACONDA_AIRGAP_CONDA_ENV_CREATION_NB_ATTEMPT=3 # Number of time the script will try to create each Conda environment (useful when you use WMLCE conda channel which sometimes return HTTP error 503)
 export ANACONDA_AIRGAP_CONDA_ENV_CREATION_WAITTIME=60 # Duration in seconds to wait before each attempt (except the first) of creating each Conda environment.
-export ANACONDA_AIRGAP_DISTRIBUTION_NAME=Anaconda3-2019.10-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
+export ANACONDA_AIRGAP_DISTRIBUTION_NAME=Miniconda3-py37_4.8.3-Linux-${ARCH} # Only required if you use prepare-airgap-install.sh. Specify the new Anaconda distribution to download and install to prepare conda packages to create the local conda channel.
 export ANACONDA_AIRGAP_INSTALL_DLINSIGHTS_ARCHIVE=$CACHE_DIR/anaconda-airgap-install-dlinsights.tgz # Only required if you use prepare-airgap-install.sh. Specify the name of the archive (.tgz) with the dlinsights conda environment.
 export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME=$CACHE_DIR/anaconda-airgap-install-ig # Only required if you use prepare-airgap-install.sh. Specify the name of the basename archive with the conda environments for Instance Groups. For each lab environment to prepare (number defined in ANACONDA_AIRGAP_NB_LAB_ENVS) an archive <ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME>-<LAB_ENV_NB>.tgz will be created.
 

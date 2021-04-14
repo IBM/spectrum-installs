@@ -11,13 +11,13 @@ export LAB_PASSWORD=`date +%s%N | md5sum | head -c8` # Password for the user cre
 export LAB_CREATE_OS_USER=disabled # Specify enabled or disabled. If enabled, an OS user will be created
 
 ### ANACONDA DISTRIBUTION
-export IG_ANACONDA_DISTRIBUTION_ID=Anaconda2019.10-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT defined in parameters.inc will be used.
+export IG_ANACONDA_DISTRIBUTION_ID=Anaconda4.8.3-Python3-Linux-${ARCH} # Anaconda distribution to be used by Instance Groups. If not specified, ANACONDA_DISTRIBUTION_ID_DEFAULT defined in parameters.inc will be used.
 
 ### INSTANCE GROUP WITH SPARK AND JUPYTER
-export IG_SPARK243_CONDA_ENV_NAME=spark243 # Name of conda environment to create, which will be used by IG_SPARK243 Instance Group.
-export IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-spark243.yaml # YAML profile for IG_SPARK243_CONDA_ENV_NAME conda environment.
-export IG_SPARK243_BASENAME=spark243 # Name of Instance Group to create with Spark 2.4.3 and Jupyter notebook.
-export IG_SPARK243_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-spark243.json # JSON profile for IG_SPARK243 Instance Group.
+export IG_SPARK301_CONDA_ENV_NAME=spark301 # Name of conda environment to create, which will be used by IG_SPARK301 Instance Group.
+export IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/CondaEnv-spark301.yaml # YAML profile for IG_SPARK301_CONDA_ENV_NAME conda environment.
+export IG_SPARK301_BASENAME=spark301 # Name of Instance Group to create with Spark 3.0.1 and Jupyter notebook.
+export IG_SPARK301_PROFILE_TEMPLATE=`dirname "$(readlink -f "$0")"`/templates/IG-spark301.json # JSON profile for IG_SPARK301 Instance Group.
 
 ### INSTANCE GROUPS FOR DLI
 export IG_DLI_CONDA_ENV_NAME=dli # Name of conda environment to create, which will be used by IG_DLI and IG_DLIEDT Instance Groups.

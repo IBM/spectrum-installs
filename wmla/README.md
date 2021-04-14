@@ -1,4 +1,8 @@
-# WMLA 1.2.2 Setup scripts
+# WMLA 1.2.3 Setup scripts
+
+## WARNING
+These scripts for WMLA 1.2.3 haven't been fully tested.  
+Please carefully test them on a test environment to ensure they work as expected for your environment and configuration.  
 
 ## Table of Contents
 
@@ -7,7 +11,7 @@
 [3. Pre-requisites](#3-pre-requisites)  
 [4. Usage](#4-usage)  
     [4.1. Download and prepare these scripts](#41-download-and-prepare-these-scripts)  
-    [4.2. Download and prepare WMLA and ifix files](#42-download-and-prepare-wmla-and-ifix-files)  
+    [4.2. Download and prepare WMLA files](#42-download-and-prepare-wmla-files)  
     [4.3. Additional steps to use local conda channel](#43-additional-steps-to-use-local-conda-channel)  
     [4.4. Additional steps for airgap environment](#44-additional-steps-for-airgap-environment)  
     [4.5. Install the cluster](#45-install-the-cluster)  
@@ -20,19 +24,18 @@
 [7.2. Author](#72-author)  
 
 ## 1. Description
-These scripts will install or uninstall Watson Machine Learning Accelerator 1.2.2 on a cluster of x86_64 or ppc64le servers, either local or shared install.  
-It can also create 3 Instance Groups, 1 with Spark 2.4.3 and Jupyter notebook and 2 for Deep Learning Impact component (1 for EDT and 1 for non EDT).  
+These scripts will install or uninstall Watson Machine Learning Accelerator 1.2.3 on a cluster of x86_64 or ppc64le servers, either local or shared install.  
+It can also create 3 Instance Groups, 1 with Spark 3.0.1 and Jupyter notebook and 2 for Deep Learning Impact component (1 for EDT and 1 for non EDT).  
 Installation can be done in an airgap environment (environment without internet access) if needed.  
 Installation can be done using these bash scripts, or using the Ansible playbook.
-Official documentation of WMLA is available [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_kc_welcome.html).
+Official documentation of WMLA is available [here](https://www.ibm.com/docs/en/wmla/1.2.3).
 
 ## 2. Components installed
-* Conductor 2.4.1
-* Deep Learning Impact 1.2.4
-* Ifix 546962 for WEBGUI (login issue due to cookie setting not recognized in Chrome and Safari)
+* Conductor 2.5.0
+* Deep Learning Impact 1.2.5
 
 ## 3. Pre-requisites
-* Servers need to be installed on a supported OS version (RHEL 7.7 on x86, RHEL 7.6 on Power) and have the minimum hardware requirements mentioned [here](https://www.ibm.com/support/knowledgecenter/SSFHA8_1.2.2/wmla_hwandsw_reqs.html).
+* Servers need to be installed on a supported OS version and have the minimum hardware requirements mentioned [here](https://www.ibm.com/docs/en/wmla/1.2.3?topic=accelerator-hardware-software-requirements).
 * If there are GPUs in server, nvidia driver and CUDA toolkit needs to be installed.
 * Servers need to be able to install few OS packages (using yum), either from local repository or through internet access, or these packages need to be already installed on all servers. The list of packages can be found in *prepare-host.sh* script.
 * Python 2.7.x needs to be available on the servers. Path to python binary can be specified with *PYTHON_BIN* parameter in *parameters.inc* (by default "python").
@@ -62,9 +65,9 @@ Download and copy these scripts to a shared filesystem accessible by all hosts y
 git clone https://github.com/IBM/spectrum-installs.git
 ```
 
-2. To copy WMLA 1.2.2 scripts:
+2. To copy WMLA 1.2.3 scripts:
 ```bash
-cp -r spectrum-installs/wmla <shared-filesystem>/wmla-1.2.2-install
+cp -r spectrum-installs/wmla <shared-filesystem>/wmla-1.2.3-install
 ```
 
 #### 4.1.2. Edit parameters
@@ -87,35 +90,26 @@ Add the list of servers to install (FQDN as returned by "hostname -f" command), 
 * __conf/management-hosts.txt__ (or the file specified as *MANAGEMENTHOSTS_FILE* in *conf/parameters.inc*): List of management hosts (do not include the master).
 * __conf/compute-hosts.txt__ (or the file specified as *COMPUTEHOSTS_FILE* in *conf/parameters.inc*): List of compute hosts (only used if the cluster is installed with *install-cluster.sh* or if *update-ssl-host.sh* is executed).
 
-### 4.2. Download and prepare WMLA and ifix files
+### 4.2. Download and prepare WMLA files
 
-#### 4.2.1. WMLA
-Either evaluation or entitled version can be used.  
-Evaluation version of WMLA can be downloaded [here](https://epwt-www.mybluemix.net/software/support/trial/cst/programwebsite.wss?siteId=303&tabId=569&w=1&_ga=2.268747569.1108201166.1591021143-1361767747.1588637100&cm_mc_uid=31929065010115886370980&cm_mc_sid_50200000=53944041591203718578).  
-Once WMLA file downloaded:
-* Extract the content of the archive:
-```bash
-tar xzf wmla-1.2.2*.tar.gz
-```
-* Extract install files:
+#### 4.2.1. WMLA files
+Download a copy of WMLA installer and the WMLA-DL package for your environment.
+Once files are downloaded, extract the content of the WMLA installer:
 ```bash
 export IBM_WMLA_LICENSE_ACCEPT=yes
-sh ibm-wmla-1.2.2*.bin
+sh ibm-wmla-1.2.3_*.bin
 ```
 
-#### 4.2.2. Ifix 546962
-It can be downloaded [here](https://www.ibm.com/support/fixcentral/swg/selectFixes?product=ibm/Other+software/IBM+Spectrum+Conductor+with+Spark&release=All&platform=All&function=fixId&fixids=sc-2.4.1-build546962&includeSupersedes=0).  
-
-#### 4.2.3. Configure parameters.inc
+#### 4.2.2. Configure parameters.inc
 By default these files are expected to be in the directory of the scripts, with this structure:
 * conductor
-  * conductor2.4.1.0_*ARCH*.bin
+  * conductor2.5.0.0_*ARCH*.bin
   * conductor_entitlement.dat
 * dli
-  * dli-1.2.4.0_*ARCH*.bin
+  * dli-1.2.5.0_*ARCH*.bin
   * dli_entitlement.dat
-* ifixes
-  * egomgmt-3.8.0.1_noarch_build546962.tar.gz  
+* wmladl
+  * wmladl-cuda11.0-py37_*ARCH*.tgz
 
 Path to these files can be changed in *conf/parameters.inc*.  
 
@@ -124,8 +118,6 @@ If the evaluation version is used, these 4 parameters need to be updated with th
 * CONDUCTOR_ENTITLEMENT
 * DLI_BIN
 * DLI_ENTITLEMENT
-
-If ifix 546962 is not used, parameter *IFIX546962_EGOMGMT* need to be commented in *conf/parameters.inc*.  
 
 ### 4.3. Additional steps to use local conda channel
 
@@ -225,7 +217,7 @@ ansible-playbook ansible-install-cluster.yaml -i ansible-inventory.ini
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egosh ego restart -f"
 ```
-5. To create lab environment, execute *create-lab-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
+5. To create lab environment, execute *create-lab-environment.sh* on master. It will create a user id, Anaconda instance, conda environments and 3 Instance Groups (1 with Spark 3.0.1 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT). At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.
 6. If there are multiple management nodes, the master candidates list need to be configured either from WMLA GUI or with this CLI:
 ```bash
 su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig masterlist $MASTER_CANDIDATES -f && egosh ego restart -f"
@@ -280,7 +272,7 @@ ansible-playbook ansible-forceuninstall-cluster.yaml -i ansible-inventory.ini
 
 ### 4.7. Managing lab environments
 Multiple lab environments can be created to let users test WMLA.  
-Each lab environment have a user account to connect to the GUI, 3 Instance Groups (1 with spark 2.4.3 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT) with relevant Anaconda instance and conda environments, and optional Jupyter notebook examples and DLI dataset and model. At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.  
+Each lab environment have a user account to connect to the GUI, 3 Instance Groups (1 with spark 3.0.1 and Jupyter notebook, 1 with Spark 2.3.3 for DLI with EDT and 1 with Spark 2.3.3 for DLI without EDT) with relevant Anaconda instance and conda environments, and optional Jupyter notebook examples and DLI dataset and model. At least 1 compute host with GPUs need to be available in the cluster in order to have GPU resource group configured.  
 A first lab environment is created by *install-cluster.sh* if __CLUSTERINSTALL_CREATE_LAB_ENVIRONMENT=enabled__ in *conf/parameters.inc*.  
 
 #### 4.7.1. Preparation
@@ -322,7 +314,7 @@ If __LAB_CREATE_OS_USER==enabled__, password-less SSH must be enabled from the h
 * __install-cluster.sh__: Cluster installation script (Install all the components on all hosts and create Instance Groups).
 * __postinstall-host.sh__: Post-installation script (Define rc init script for WMLA and EGO sudoers on current host).
 * __update-ssl-host.sh__: Script to update SSL self-signed certificates and keystores to include all hostnames.
-* __create-lab-environment.sh__: Create 3 Instance Groups (1 with Spark 2.4.3 and Jupyter notebook, 1 for DLI with EDT and 1 for DLI without EDT).
+* __create-lab-environment.sh__: Create 3 Instance Groups (1 with Spark 3.0.1 and Jupyter notebook, 1 for DLI with EDT and 1 for DLI without EDT).
 * __delete-lab-environment.sh__: Delete a lab environment created by *create-lab-environment.sh*.
 * __prepare-local-conda-channel.sh__: Script to download Anaconda distribution and create a local conda channel.
 * __prepare-airgap-install.sh__: Script to download Anaconda distribution and create conda environments.
@@ -348,15 +340,14 @@ If __LAB_CREATE_OS_USER==enabled__, password-less SSH must be enabled from the h
 * __templates/__:
     * __CondaEnv-dlinsights.yaml__: Conda environment profile for dlinsights EGO service.
     * __CondaEnv-dli.yaml__: Conda environment profile for dliedt Instance Group.
-    * __CondaEnv-spark243.yaml__: Conda environment profile for spark243 Instance Group.
-    * __CondaEnv-wmlce.yaml__: Example of conda environment profile with Deep Learning Frameworks from IBM WMLCE.
+    * __CondaEnv-spark301.yaml__: Conda environment profile for spark301 Instance Group.
     * __IG-dli.json__: Instance Group profile for DLI.
     * __IG-dliedt.json__: Instance Group profile for DLI with Elastic Distributed Training.
-    * __IG-spark243.json__: Instance Group profile for spark243.
+    * __IG-spark301.json__: Instance Group profile for spark301.
 
 ## 6. Comments for SSL Certificates
-* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/get_started/locating_pmc.html).
-* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/support/knowledgecenter/SSZU2E_2.4.1/manage_cluster/security_https.html).
+* *update-ssl-host.sh* script will generate self-signed certificates with "IBM Spectrum Computing Root CA" certificate authority. In order to avoid security alerts in the browser when accessing the web interface, follow the step 3 of [this documentation](https://www.ibm.com/docs/en/spectrum-conductor/2.5.0?topic=conductor-locating-cluster-management-console).
+* To import external certificates, do not run *update-ssl-host.sh* script and follow the documentation to import external certificates available [here](https://www.ibm.com/docs/en/spectrum-conductor/2.5.0?topic=ssl-securing-web-server-communication).
 
 ## 7. Info
 ### 7.1. Source repository

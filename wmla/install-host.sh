@@ -22,11 +22,8 @@ log "Starting host installation"
 [[ ! -f $CONDUCTOR_ENTITLEMENT ]] && log "Conductor entitlement $CONDUCTOR_ENTITLEMENT doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $DLI_BIN ]] && log "DLI installer $DLI_BIN doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $DLI_ENTITLEMENT ]] && log "Conductor entitlement $DLI_ENTITLEMENT doesn't exist, aborting" ERROR && exit 1
-if [ "$IFIX546962_EGOMGMT" != "" ]
-then
-  [[ ! -f $IFIX546962_EGOMGMT ]] && log "iFix 546962 installer $IFIX546962_EGOMGMT doesn't exist, aborting" ERROR && exit 1
-fi
 [[ ! -f $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE ]] && log "dlinsights conda profile template $DLI_CONDA_DLINSIGHTS_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
+[[ ! -f $CONDA_OPENCE_ARCHIVE ]] && log "WMLA-DL (OpenCE) archive $CONDA_OPENCE_ARCHIVE doesn't exist, aborting" ERROR && exit 1
 
 log "Identify the type of current host (master, management or compute)"
 determineHostType
@@ -146,6 +143,9 @@ su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig join $
 log "Define EGO_GPU_AUTOCONFIG setting in ego.conf"
 echo "EGO_GPU_AUTOCONFIG=Y" >> $INSTALL_DIR/kernel/conf/ego.conf
 
+log "Extracting WMLA-DL archive if necessary"
+extractTarArchive $CONDA_OPENCE_ARCHIVE $CONDA_OPENCE_DIR
+
 if [ "$HOST_TYPE" == "COMPUTE" ]
 then
   log "Installation on this compute host finished!" SUCCESS
@@ -180,12 +180,6 @@ then
   su -l $CLUSTERADMIN -c "source $INSTALL_DIR/profile.platform && egoconfig mghost $EGO_SHARED_DIR -f" 2>&1 | tee -a $LOG_FILE
   rm -f $SYNC_DIR/egoconfig-mghost.lock 2>&1 | tee -a $LOG_FILE
   source $INSTALL_DIR/profile.platform
-fi
-
-if [ "$IFIX546962_EGOMGMT" != "" ]
-then
-  log "Installing Ifix 546962"
-  installIfix "$IFIX546962_EGOMGMT"
 fi
 
 if [ "$HOST_TYPE" == "MANAGEMENT" ]

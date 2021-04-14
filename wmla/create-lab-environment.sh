@@ -6,8 +6,8 @@ source `dirname "$(readlink -f "$0")"`/functions/functions.inc
 export LOG_FILE=$LOG_DIR/create-lab-environment_`hostname -s`.log
 [[ ! -d $LOG_DIR ]] && mkdir -p $LOG_DIR && chmod 777 $LOG_DIR
 
-[[ ! -f $IG_SPARK243_PROFILE_TEMPLATE ]] && log "Spark243 Instance Group profile template $IG_SPARK243_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
-[[ ! -f $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE ]] && log "Spark243 conda profile template $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
+[[ ! -f $IG_SPARK301_PROFILE_TEMPLATE ]] && log "Spark301 Instance Group profile template $IG_SPARK301_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
+[[ ! -f $IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE ]] && log "Spark301 conda profile template $IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $IG_DLI_PROFILE_TEMPLATE ]] && log "DLI Instance Group profile template $IG_DLI_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
 [[ ! -f $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE ]] && log "DLI conda profile template $IG_DLI_CONDA_ENV_PROFILE_TEMPLATE doesn't exist, aborting" ERROR && exit 1
 
@@ -106,10 +106,10 @@ createAnacondaInstance "$IG_ANACONDA_DISTRIBUTION_ID" "$IG_ANACONDA_INSTANCE_NAM
 
 if [ "$ANACONDA_AIRGAP_INSTALL" == "enabled" ]
 then
-  log "Create $IG_SPARK243_CONDA_ENV_NAME and $IG_DLI_CONDA_ENV_NAME conda environments based on the airgap archive package and wait for successful deployment"
+  log "Create $IG_SPARK301_CONDA_ENV_NAME and $IG_DLI_CONDA_ENV_NAME conda environments based on the airgap archive package and wait for successful deployment"
   export ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE=${ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE_BASENAME}-${LAB_USER: -1}.tgz
-  extractCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $LAB_EXEC_USER
-  discoverCondaEnvironments $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $ANACONDA_INSTANCE_UUID
+  extractCondaEnvironmentsFromArchive $ANACONDA_AIRGAP_INSTALL_IG_ARCHIVE $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK301_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $LAB_EXEC_USER
+  discoverCondaEnvironments $IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda "$IG_SPARK301_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME" $ANACONDA_INSTANCE_UUID
 else
   log "Create $IG_DLI_CONDA_ENV_NAME conda environment and wait for successful deployment"
   if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
@@ -121,16 +121,16 @@ else
     CONDA_PROFILE_TEMPLATE=$IG_DLI_CONDA_ENV_PROFILE_TEMPLATE
   fi
   createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_DLI_CONDA_ENV_NAME
-  log "Create $IG_SPARK243_CONDA_ENV_NAME conda environment and wait for successful deployment"
+  log "Create $IG_SPARK301_CONDA_ENV_NAME conda environment and wait for successful deployment"
   if [ "$ANACONDA_LOCAL_CHANNEL" == "enabled" ]
   then
     prepareLocalCondaChannel
-    log "Anaconda local channel enabled, modifying $IG_SPARK243_CONDA_ENV_NAME conda env profile template $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
-    modifyCondaEnvironmentProfileWithLocalChannel $IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
+    log "Anaconda local channel enabled, modifying $IG_SPARK301_CONDA_ENV_NAME conda env profile template $IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE to use local channel"
+    modifyCondaEnvironmentProfileWithLocalChannel $IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE "CONDA_PROFILE_TEMPLATE"
   else
-    CONDA_PROFILE_TEMPLATE=$IG_SPARK243_CONDA_ENV_PROFILE_TEMPLATE
+    CONDA_PROFILE_TEMPLATE=$IG_SPARK301_CONDA_ENV_PROFILE_TEMPLATE
   fi
-  createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK243_CONDA_ENV_NAME
+  createCondaEnvironment $ANACONDA_INSTANCE_UUID $CONDA_PROFILE_TEMPLATE $IG_SPARK301_CONDA_ENV_NAME
 fi
 
 IG_DLI_NAME=${LAB_USER}-${IG_DLI_BASENAME}
@@ -159,29 +159,29 @@ else
   createIgDliEdt "$IG_DLIEDT_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_DLIEDT_NAME}" "$IG_DLIEDT_NAME" "$LAB_EXEC_USER" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_DLI_CONDA_ENV_NAME" "$DLI_SHARED_FS/conf" "$IG_ANACONDA_INSTANCE_DEPLOY_HOME/anaconda" "false" "$SPARKSHUFFLE_DIR"
 fi
 
-IG_SPARK243_NAME=${LAB_USER}-${IG_SPARK243_BASENAME}
-log "Creating consumers for instance group $IG_SPARK243_NAME"
-createIgConsumers /${LAB_USER}/${IG_SPARK243_NAME} $IG_SPARK243_NAME $LAB_EXEC_USER $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
-updateResourcePlanIgConsumers $IG_SPARK243_NAME
+IG_SPARK301_NAME=${LAB_USER}-${IG_SPARK301_BASENAME}
+log "Creating consumers for instance group $IG_SPARK301_NAME"
+createIgConsumers /${LAB_USER}/${IG_SPARK301_NAME} $IG_SPARK301_NAME $LAB_EXEC_USER $RG_CPU_NAME $RG_GPU_NAME $LAB_USER
+updateResourcePlanIgConsumers $IG_SPARK301_NAME
 
-log "Create Instance Group $IG_SPARK243_NAME"
+log "Create Instance Group $IG_SPARK301_NAME"
 if [ "$INSTALL_TYPE" == "local" ]
 then
-  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK243_NAME}" "$IG_SPARK243_NAME" "$LAB_EXEC_USER" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "true"
+  createIgSparkJupyter "$IG_SPARK301_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK301_NAME}" "$IG_SPARK301_NAME" "$LAB_EXEC_USER" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK301_CONDA_ENV_NAME" "true"
 else
-  createIgSparkJupyter "$IG_SPARK243_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK243_NAME}" "$IG_SPARK243_NAME" "$LAB_EXEC_USER" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK243_CONDA_ENV_NAME" "false" "$SPARKSHUFFLE_DIR"
+  createIgSparkJupyter "$IG_SPARK301_PROFILE_TEMPLATE" "/${LAB_USER}/${IG_SPARK301_NAME}" "$IG_SPARK301_NAME" "$LAB_EXEC_USER" "$IG_DIR" "$SPARKHA_DIR" "$SPARKHISTORY_DIR" "$NOTEBOOKS_DIR" "$RG_CPU_NAME" "$RG_GPU_NAME" "$IG_ANACONDA_INSTANCE_NAME" "$IG_SPARK301_CONDA_ENV_NAME" "false" "$SPARKSHUFFLE_DIR"
 fi
 
-log "Get UUID of Instance Group $IG_SPARK243_NAME"
-getIgUUID $IG_SPARK243_NAME
+log "Get UUID of Instance Group $IG_SPARK301_NAME"
+getIgUUID $IG_SPARK301_NAME
 
-log "Create Notebook Instance for user $LAB_USER on Instance Group $IG_SPARK243_NAME"
-createIgNotebookInstance "$LAB_USER" "$IG_UUID" "Jupyter" "5.4.0"
+log "Create Notebook Instance for user $LAB_USER on Instance Group $IG_SPARK301_NAME"
+createIgNotebookInstance "$LAB_USER" "$IG_UUID" "Jupyter" "6.0.0"
 
 if [ -d $NOTEBOOK_SOURCE_DIR ]
 then
-  log "Create sample notebooks for user $LAB_USER on Instance Group $IG_SPARK243_NAME using the source directory: $NOTEBOOK_SOURCE_DIR"
-  getIgUUID $IG_SPARK243_NAME
+  log "Create sample notebooks for user $LAB_USER on Instance Group $IG_SPARK301_NAME using the source directory: $NOTEBOOK_SOURCE_DIR"
+  getIgUUID $IG_SPARK301_NAME
   createSampleNotebooks "$LAB_USER" "$IG_UUID" "$LAB_EXEC_USER" "$NOTEBOOK_SOURCE_DIR"
 fi
 

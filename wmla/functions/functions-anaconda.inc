@@ -51,7 +51,7 @@ createLocalCondaChannel() {
       log "Profile $ANACONDA_ENV_PROFILE doesn't exist, aborting" ERROR
       exit 1
     fi
-    convertCondaTemplateToProfile $ANACONDA_ENV_PROFILE env${ANACONDA_ENV_ID} TMP_CONDA_ENV_PROFILE
+    convertCondaTemplateToProfile $ANACONDA_ENV_PROFILE env${ANACONDA_ENV_ID} $CONDA_OPENCE_DIR TMP_CONDA_ENV_PROFILE
     local ATTEMPT_NB=1
     while [ $ATTEMPT_NB -le $ANACONDA_LOCAL_CONDA_ENV_CREATION_NB_ATTEMPT ]
     do
@@ -547,7 +547,7 @@ createCondaEnvironmentFromProfile() {
   local CONDA_ENV_PROFILE_TEMPLATE=$2
   local CONDA_ENV_NAME=$3
   getRestUrls
-  convertCondaTemplateToProfile $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME TMP_CONDA_ENV_PROFILE
+  convertCondaTemplateToProfile $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_NAME $CONDA_OPENCE_DIR TMP_CONDA_ENV_PROFILE
   local CURL_OUT=`curl -s -S -k -w "%{http_code}" -u $EGO_ADMIN_USERNAME:$EGO_ADMIN_PASSWORD -X POST -H 'Content-Type:multipart/form-data' -H 'Accept:application/json' -F "file=@$TMP_CONDA_ENV_PROFILE" ${ASCD_REST_BASE_URL}conductor/v1/anaconda/instances/$ANACONDA_INSTANCE_UUID/environments`
   local RESPONSE=${CURL_OUT:0:(-3)}
   local HTTP_CODE=${CURL_OUT:(-3)}
@@ -650,10 +650,14 @@ parseCondaEnvProfile() {
 convertCondaTemplateToProfile() {
   local CONDA_ENV_PROFILE_TEMPLATE=$1
   local CONDA_ENV_NAME=$2
-  local __resultvar=$3
+  local CONDA_OPENCE_DIR=$3
+  local __resultvar=$4
+  CONDA_OPENCE_CHANNEL="file://${CONDA_OPENCE_DIR}"
+  CONDA_OPENCE_CHANNEL=${CONDA_OPENCE_CHANNEL//\//\\\/}
   CONDA_ENV_PROFILE=/tmp/condaEnv-profile-`date +%s%N | md5sum | head -c8`.yaml
   cp $CONDA_ENV_PROFILE_TEMPLATE $CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
   sed -i 's/##CONDA_ENV_NAME##/'$CONDA_ENV_NAME'/g' $CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
+  sed -i 's/##CONDA_OPENCE_CHANNEL##/'$CONDA_OPENCE_CHANNEL'/g' $CONDA_ENV_PROFILE 2>&1 | tee -a $LOG_FILE
   eval $__resultvar="'$CONDA_ENV_PROFILE'"
 }
 

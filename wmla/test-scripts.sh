@@ -463,12 +463,12 @@ checkInstall() {
     then
       return
     fi
-    checkAnaconda "Anaconda-${LAB_USER_BASE}1" "$IG_SPARK243_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME"
+    checkAnaconda "Anaconda-${LAB_USER_BASE}1" "$IG_SPARK301_CONDA_ENV_NAME $IG_DLI_CONDA_ENV_NAME"
     if [ "$CHECK_STATUS" != "success" ]
     then
       return
     fi
-    for IG_NAME in ${LAB_USER_BASE}1-${IG_SPARK243_NAME} ${LAB_USER_BASE}1-${IG_DLI_BASENAME} ${LAB_USER_BASE}1-${IG_DLIEDT_BASENAME}
+    for IG_NAME in ${LAB_USER_BASE}1-${IG_SPARK301_NAME} ${LAB_USER_BASE}1-${IG_DLI_BASENAME} ${LAB_USER_BASE}1-${IG_DLIEDT_BASENAME}
     do
       checkIg $IG_NAME
       if [ "$CHECK_STATUS" != "success" ]
