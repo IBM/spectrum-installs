@@ -340,7 +340,9 @@ If __LAB_CREATE_OS_USER==enabled__, password-less SSH must be enabled from the h
 * __templates/__:
     * __CondaEnv-dlinsights.yaml__: Conda environment profile for dlinsights EGO service.
     * __CondaEnv-dli.yaml__: Conda environment profile for dliedt Instance Group.
-    * __CondaEnv-spark301.yaml__: Conda environment profile for spark301 Instance Group.
+    * __CondaEnv-spark301.yaml__: Conda environment profile for spark301 Instance Group (copy of the template profile provided by WMLA).
+    * __CondaEnv-opence.yaml__: Conda environment profile with OpenCE frameworks and required packages to be used with Jupyter 6.0.0 notebook, provided as example.
+    * __CondaEnv-elyra.yaml__: Conda environment profile with Elyra, OpenCE frameworks and required packages to be used with Jupyter 6.0.0 notebook, provided as example. For Elyra, once the conda environment is created, you need to go each server where the conda environment is installed, activate the environment and run command "jupyter lab build".
     * __IG-dli.json__: Instance Group profile for DLI.
     * __IG-dliedt.json__: Instance Group profile for DLI with Elastic Distributed Training.
     * __IG-spark301.json__: Instance Group profile for spark301.
